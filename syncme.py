@@ -170,4 +170,22 @@ def rsync(**kwargs):
     return_code = sp.call(cmd)
     return return_code
 
-setup_logger()
+def list_syncs(config):
+    """list syncs """
+    for sync in config['syncs']:
+        print('{}:'.format(sync['name']))
+        print('\tpaths:')
+        for path in sync['paths']:
+            print('\t\t{}'.format(path))
+        print('\thosts:')
+        for host in sync['hosts']:
+            print('\t\tname: {}'.format(host['name']))
+            print('\t\taddress: {}'.format(host['address']))
+            print('\t\tuser: {}'.format(host['user']))
+            print('\t\tpaths:')
+            for path in host['paths']:
+                print('\t\t\t{}'.format(path))
+        print('\ttags:')
+        for tag in sync['tags']:
+            print('\t\t{}'.format(tag))
+        print('')
