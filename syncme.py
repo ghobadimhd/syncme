@@ -109,22 +109,9 @@ def pull(**kwargs):
     """
     transfer file from remote to local
     """
-    logger = logging.getLogger('default')
-    kwargs.setdefault('remote_path', kwargs['local_path'])
-    kwargs.setdefault('host', 'localhost')
-    kwargs.setdefault('user', getpass.getuser())
-    kwargs.setdefault('tags', [])
-    kwargs.setdefault('recursive', False)
-
-    cmd = [RSYNC, '{0}@{1}:{2}'.format(
-        kwargs['user'], kwargs['host'], kwargs['remote_path']), kwargs['local_path']]
-    # add recursive tag to command
-    if kwargs['recursive']:
-        cmd.append('-r')
-    # add tags 
-    cmd.extend(kwargs['tags'])
-    logger.debug('debug: ' + ' '.join(cmd))
-    return_code = sp.call(cmd)
+    return_code = rsync(dest_path=kwargs.get('local_path'), source_path=kwargs.get('remote_path'),
+                        source_host=kwargs.get('host'), source_user=kwargs.get('user'),
+                        tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
     return return_code
 
 def rsync(**kwargs):
