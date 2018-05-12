@@ -169,9 +169,9 @@ def rsync(**kwargs):
         cmd.append('-r')
     # add tags
     cmd + kwargs['tags']
-    # logger.info('Transfering: %s <<< %s@%s:%s', kwargs['local_path'],
-    #             kwargs['user'], kwargs['host'], kwargs['remote_path'])
-    return_code = sp.call(cmd)
+    logger.debug('debug: running ' + ' '.join(cmd))
+    return_code, output = sp.getstatusoutput(' '.join(cmd))
+    logger.debug(output)
     return return_code
 
 def list_syncs(config):
