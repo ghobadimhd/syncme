@@ -16,10 +16,10 @@ if not os.path.exists(RSYNC):
     logging.error('cannot find rsync at %s', RSYNC)
     raise FileNotFoundError()
 
-def setup_logger():
+def setup_logger(level=logging.INFO):
     """ setup a default logger """
     logger = logging.getLogger('default')
-    logger.setLevel(logging.INFO)
+    logger.setLevel(level)
     logger.addHandler(logging.StreamHandler())
 
 def load_config(config_path=None):
@@ -111,9 +111,8 @@ def push(**kwargs):
     if kwargs['recursive']:
         cmd.append('-r')
     # add tags
-    cmd + kwargs['tags']
-    # logger.info('Transfering %s >>> %s@%s:%s', kwargs['local_path'],
-    #             kwargs['user'], kwargs['host'], kwargs['remote_path'])
+    cmd.extend(kwargs['tags'])
+    logger.debug('debug: ' + ' '.join(cmd))
     return_code = sp.call(cmd)
 
     return return_code
@@ -136,9 +135,8 @@ def pull(**kwargs):
     if kwargs['recursive']:
         cmd.append('-r')
     # add tags 
-    cmd + kwargs['tags']
-    # logger.info('Transfering: %s <<< %s@%s:%s', kwargs['local_path'],
-    #             kwargs['user'], kwargs['host'], kwargs['remote_path'])
+    cmd.extend(kwargs['tags'])
+    logger.debug('debug: ' + ' '.join(cmd))
     return_code = sp.call(cmd)
     return return_code
 
