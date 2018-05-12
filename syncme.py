@@ -218,3 +218,42 @@ def push_sync(config, sync_name='all', host_name='all'):
                     failed_hosts.append((host['name'], local_path))
 
     return failed_hosts
+
+def pull_sync(config, sync_name='all', host_name=None):
+    """use the config to pull paths from hosts"""
+    logger = logging.getLogger('default')
+    failed_hosts = []
+    sync_name = sync_name.lower()
+    if host_name is not None:
+        host_name = host_name.lower()
+
+    # find sync
+    if sync_name == 'all':
+            syncs = config['syncs']
+    else:
+        syncs = [x for x in config['syncs'] if x['name'] == sync_name]
+
+    for sync in syncs:
+        # find host
+        if host_name is None:
+            remote_hosts = sync['hosts']
+        else:
+            remote_hosts = [x for x in sync['hosts']
+                            if x['name'] == host_name]
+
+        for host in remote_hosts:
+            logger.info('Pull from %s to %s', sync['name'], host['name'])
+            for local_path, remote_path in zip(sync['paths'], host['paths']):
+                return_code = push(local_path=local_path, remote_path=remote_path,
+                                   host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
+                if return_code != 0:
+                    logger.debug('Failed to transfer path %s to local system',
+                                 remote_path)
+                    failed_hosts.append((host['name'], local_path))
+            if host['name'] not in [x[0] for x in failed_hosts]:
+                logger.info('Local system successfully synced with %s', host['name'])
+                break
+            else:
+                logger.error('paths partialy synced try to sync with another host')
+
+    return failed_hosts
