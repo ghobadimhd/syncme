@@ -187,3 +187,34 @@ def list_syncs(config):
         for tag in sync['tags']:
             print('\t\t{}'.format(tag))
         print('')
+
+def push_sync(config, sync_name='all', host_name='all'):
+    """use the config to push paths to hosts """
+    logger = logging.getLogger('default')
+    failed_hosts = []
+    sync_name = sync_name.lower()
+    host_name = host_name.lower()
+    # find sync
+    if sync_name == 'all':
+            syncs = config['syncs']
+    else:
+        syncs = [x for x in config['syncs'] if x['name'] == sync_name]
+    
+    for sync in syncs:
+        # find host
+        if host_name == 'all':
+            remote_hosts = sync['hosts']
+        else:
+            remote_hosts = [x for x in sync['hosts']
+                            if x['name'] == host_name]
+
+        for host in remote_hosts:
+            logger.info('Push from %s to %s:', sync['name'], host['name'])
+            for local_path, remote_path in zip(sync['paths'], host['paths']):
+                return_code = push(local_path=local_path, remote_path=remote_path,
+                               host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
+                if return_code != 0:
+                    logger.error('failed to transfer path %s to %s', local_path, host['name'])
+                    failed_hosts.append((host['name'], local_path))
+
+    return failed_hosts
