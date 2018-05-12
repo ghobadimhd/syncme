@@ -146,18 +146,24 @@ def rsync(**kwargs):
     """
     logger = logging.getLogger('default')
     kwargs.setdefault('source_path', '.')
-    kwargs.setdefault('soruce_host', 'localhost')
     kwargs.setdefault('soruce_user', getpass.getuser())
     kwargs.setdefault('dest_path', '.')
-    kwargs.setdefault('dest_host', 'localhost')
     kwargs.setdefault('dest_user', getpass.getuser())
     kwargs.setdefault('tags', [])
     kwargs.setdefault('recursive', False)
 
-    cmd = [RSYNC, '{0}@{1}:{2}'.format(
-        kwargs['source_user'], kwargs['source_host'], kwargs['source_path']),
-        '{0}@{1}:{2}'.format(
-        kwargs['dest_user'], kwargs['dest_host'], kwargs['dest_path'])]
+    if kwargs.get('source_host', None) is None:
+        cmd = [RSYNC, '{0}'.format(kwargs['source_path']),
+               '{0}@{1}:{2}'.format(kwargs['dest_user'], kwargs['dest_host'],
+               kwargs['dest_path'])]
+    elif kwargs.get('dest_host', None) is None:
+        cmd = [RSYNC, '{0}@{1}:{2}'.format(kwargs['source_user'],
+               kwargs['source_host'], kwargs['source_path']),
+               '{0}'.format(kwargs['dest_path'])]
+    else:
+        logger.critical('Both source and destination cannot be remote hosts')
+        return 1
+
     # add recursive tag to command
     if kwargs['recursive']:
         cmd.append('-r')
