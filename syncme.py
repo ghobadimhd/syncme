@@ -242,7 +242,7 @@ def pull_sync(config, sync_name='all', host_name=None):
                             if x['name'] == host_name]
 
         for host in remote_hosts:
-            logger.info('Pull from %s to %s', sync['name'], host['name'])
+            logger.info('Pull from %s to %s', host['name'], sync['name'])
             for local_path, remote_path in zip(sync['paths'], host['paths']):
                 return_code = push(local_path=local_path, remote_path=remote_path,
                                    host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
