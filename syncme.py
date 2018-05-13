@@ -92,7 +92,7 @@ def validate_config(config:dict):
 
             host['paths'] = new_host_paths
 
-        return True
+    return True
 
 def push(**kwargs):
     """
