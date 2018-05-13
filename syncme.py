@@ -4,6 +4,7 @@ import logging
 import os
 import subprocess as sp
 import getpass
+import argparse
 from itertools import zip_longest
 import yaml
 
@@ -241,3 +242,50 @@ def pull_sync(config, sync_name='all', host_name=None):
                 logger.error('paths partialy synced try to sync with another host')
 
     return failed_hosts
+
+def setup_argparse():
+    parser = argparse.ArgumentParser(prog='syncme')
+    parser.add_argument('-v', action='store_true', help='verbose mode')
+    parser.add_argument('-c', '--config', help='load config from file specified by CONFIG')
+    subparsers = parser.add_subparsers()
+
+    parser_list = subparsers.add_parser('list')
+    parser_list.set_defaults(action='list')
+
+    parser_push = subparsers.add_parser('push', help='push paths to hosts')
+    parser_push.set_defaults(action='push')
+    parser_push.add_argument('--sync-name', dest='sync_name', default='all')
+    parser_push.add_argument('--host-name', dest='host_name', default='all')
+
+    parser_pull = subparsers.add_parser('pull', help='pull paths from a host')
+    parser_pull.set_defaults(action='pull')
+    parser_pull.add_argument('--sync-name', dest='sync_name', default='all')
+    parser_pull.add_argument('--host-name', dest='host_name', default=None)
+
+    return parser
+
+if __name__ == '__main__':
+    parser = setup_argparse()
+    args = parser.parse_args()
+    if 'action' not in args:
+        parser.print_help()
+        exit(1)
+
+    if args.v:
+        setup_logger(logging.DEBUG)
+    else:
+        setup_logger()
+    logger = logging.getLogger('default')
+    if 'c' in args:
+        config = load_config(args.c)
+    else:
+        config = load_config()
+    if not validate_config(config):
+        logger.critical('config error')
+        exit(1)
+    if args.action == 'list':
+        list_syncs(config)
+    if args.action == 'push':
+        push_sync(config, args.sync_name, args.host_name)
+    if args.action == 'pull':
+        pull_sync(config, args.sync_name, args.host_name)
