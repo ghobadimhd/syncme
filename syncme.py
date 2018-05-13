@@ -119,10 +119,14 @@ def rsync(**kwargs):
     transfer file from remote to local
     """
     logger = logging.getLogger('default')
+    # set default user for source and destination
+    if kwargs.get('source_user') is None:
+        kwargs['source_user'] = getpass.getuser()
+    if kwargs.get('dest_user') is None:
+        kwargs['dest_user'] = getpass.getuser()
+
     kwargs.setdefault('source_path', '.')
-    kwargs.setdefault('soruce_user', getpass.getuser())
     kwargs.setdefault('dest_path', '.')
-    kwargs.setdefault('dest_user', getpass.getuser())
     kwargs.setdefault('tags', [])
     kwargs.setdefault('recursive', False)
 
