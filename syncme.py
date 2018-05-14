@@ -114,13 +114,20 @@ def validate_config(config: dict):
     return True
 
 def push(**kwargs):
-    """
-    transfer file from local to remote
-    """
+    """ transfer file from local to remote
 
-    return_code = rsync(source_path=kwargs.get('local_path'), dest_path=kwargs.get('remote_path'),
-                        dest_host=kwargs.get('host'), dest_user=kwargs.get('user'),
-                        tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
+    args:
+        local_path: path of source file to transfer
+        remote_path: path of destination file
+        host: remote host address
+        user: user of remote host
+        recursive: if set True path trasfered recursively
+        tags: list of str tags(options) added to rsync command
+    """
+    return_code = rsync(
+        source_path=kwargs.get('local_path'), dest_path=kwargs.get('remote_path'),
+            dest_host=kwargs.get('host'), dest_user=kwargs.get('user'),
+            tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
 
     return return_code
 
