@@ -24,7 +24,16 @@ def setup_logger(level=logging.INFO):
     logger.addHandler(logging.StreamHandler())
 
 def load_config(config_path=None):
-    """ Load config from yml file """
+    """ Load config from yml file
+
+    Load config from path specified by config_path
+    if config_path not specified load config from SYNCME_CONFIG enviroment
+    variable:
+         ~/.syncme.yml, ~/.config/syncme.yml, /etc/syncme.yml
+
+    args:
+        config_path: custom config path
+    """
     logger = logging.getLogger('default')
     if config_path is not None:
         
