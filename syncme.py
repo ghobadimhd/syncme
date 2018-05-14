@@ -11,7 +11,12 @@ import yaml
 
 # global variables
 SYNCME_CONFIG = os.path.expanduser(os.environ.get('SYNCME_CONFIG', ''))
-CONFIG_LOCATIONS = [SYNCME_CONFIG, os.path.expanduser('~/.syncme.yml'), os.path.expanduser('~/.config/syncme.yml'), '/etc/syncme.yml']
+CONFIG_LOCATIONS = [
+    SYNCME_CONFIG,
+    os.path.expanduser('~/.syncme.yml'),
+    os.path.expanduser('~/.config/syncme.yml'),
+    '/etc/syncme.yml'
+    ]
 RSYNC = '/usr/bin/rsync'
 if not os.path.exists(RSYNC):
     logging.error('cannot find rsync at %s', RSYNC)
