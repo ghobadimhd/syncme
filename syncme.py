@@ -57,7 +57,16 @@ def load_config(config_path=None):
     logger.error('config not found')
     return None
 
-def validate_config(config:dict):
+def validate_config(config: dict):
+    """ check and validate config
+
+    check syncs and hosts, fix missing user, check and fix source and
+    destination paths
+
+    args:
+        config: config loaded from yaml file
+
+    """
     logger = logging.getLogger('default')
     config.setdefault('hosts', [])
     config.setdefault('syncs', [])
