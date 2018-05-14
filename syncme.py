@@ -132,12 +132,20 @@ def push(**kwargs):
     return return_code
 
 def pull(**kwargs):
+    """ transfer file from remote to local
+
+    args:
+        local_path: path of source file (destination)
+        remote_path: path of remote file
+        host: remote host address
+        user: user of remote host
+        recursive: if set True path trasfered recursively
+        tags: list of str tags(options) added to rsync command
     """
-    transfer file from remote to local
-    """
-    return_code = rsync(dest_path=kwargs.get('local_path'), source_path=kwargs.get('remote_path'),
-                        source_host=kwargs.get('host'), source_user=kwargs.get('user'),
-                        tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
+    return_code = rsync(
+        dest_path=kwargs.get('local_path'), source_path=kwargs.get('remote_path'),
+            source_host=kwargs.get('host'), source_user=kwargs.get('user'),
+            tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
     return return_code
 
 def rsync(**kwargs):
