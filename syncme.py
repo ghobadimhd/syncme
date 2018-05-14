@@ -149,8 +149,17 @@ def pull(**kwargs):
     return return_code
 
 def rsync(**kwargs):
-    """
-    transfer file from remote to local
+    """ this is wrapper around rsync command
+
+    args:
+        source_path: path of source file
+        dest_path: path of destination file
+        source_host: address of source host
+        dest_host: address of destination host
+        source_user: source host username
+        dest_user: destination host username
+        tags: list of str tags(options) added to rsync command
+        recursive: if set True -r option added to rsync
     """
     logger = logging.getLogger('default')
     # set default user for source and destination
