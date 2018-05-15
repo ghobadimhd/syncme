@@ -85,6 +85,13 @@ def validate_config(config: dict):
         if 'name' not in sync:
             logger.error('each sync most have a name')
             return False
+        else:
+            if sync['name'] == 'all':
+                logger.error("sync's name cannot be 'all'")
+                return False
+            # sync name are case insensitive
+            sync['name'] = sync['name'].lower()
+
         if 'hosts' not in sync:
             logger.error('%s: no host defined', sync['name'])
             return False
