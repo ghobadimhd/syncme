@@ -22,10 +22,12 @@ if not os.path.exists(RSYNC):
     logging.error('cannot find rsync at %s', RSYNC)
     raise FileNotFoundError()
 
-def setup_logger(level=logging.INFO):
+logger = logging.getLogger(__name__)
+
+def setup_logger(level='INFO'):
     """ setup a default logger """
-    logger = logging.getLogger('default')
-    logger.setLevel(level)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(getattr(logging, level.upper()))
     logger.addHandler(logging.StreamHandler())
 
 def load_config(config_path=None):
@@ -39,7 +41,6 @@ def load_config(config_path=None):
     args:
         config_path: custom config path
     """
-    logger = logging.getLogger('default')
     if config_path is not None:
         
         if os.path.exists(config_path) and os.path.isfile(config_path):
@@ -72,7 +73,7 @@ def validate_config(config: dict):
         config: config loaded from yaml file
 
     """
-    logger = logging.getLogger('default')
+
     config.setdefault('hosts', [])
     config.setdefault('syncs', [])
     config.setdefault('recursive', False)
@@ -166,7 +167,7 @@ def rsync(**kwargs):
         tags: list of str tags(options) added to rsync command
         recursive: if set True -r option added to rsync
     """
-    logger = logging.getLogger('default')
+
     # set default user for source and destination
     if kwargs.get('source_user') is None:
         kwargs['source_user'] = getpass.getuser()
@@ -222,7 +223,7 @@ def list_syncs(config):
 
 def push_sync(config, sync_name='all', host_name='all'):
     """use the config to push paths to hosts """
-    logger = logging.getLogger('default')
+
     failed_hosts = []
     sync_name = sync_name.lower()
     host_name = host_name.lower()
@@ -253,7 +254,7 @@ def push_sync(config, sync_name='all', host_name='all'):
 
 def pull_sync(config, sync_name='all', host_name=None):
     """use the config to pull paths from hosts"""
-    logger = logging.getLogger('default')
+
     failed_hosts = []
     sync_name = sync_name.lower()
     if host_name is not None:
@@ -319,10 +320,9 @@ if __name__ == '__main__':
         exit(1)
 
     if args.v:
-        setup_logger(logging.DEBUG)
+        setup_logger('DEBUG')
     else:
         setup_logger()
-    logger = logging.getLogger('default')
     if 'c' in args:
         config = load_config(args.c)
     else:
