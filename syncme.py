@@ -63,6 +63,17 @@ def load_config(config_path=None):
     logger.error('config not found')
     return None
 
+def merge_host(global_hosts, host):
+    """ """
+    global_host = None
+    for h in global_hosts:
+        if h['name'] == host['name']:
+            global_host = h
+            break
+    if global_host is not None:
+        for key in global_host.keys():
+            host.setdefault(key, global_host[key])
+
 def validate_config(config: dict):
     """ check and validate config
 
@@ -78,6 +89,18 @@ def validate_config(config: dict):
     config.setdefault('syncs', [])
     config.setdefault('recursive', False)
     config.setdefault('tags', [])
+
+    # check and validate global hosts
+    for host in config['hosts']:
+        if 'address' not in host:
+            logger.error('address is not defined for host')
+            return False
+        if 'paths' in host:
+            logger.error('paths is invalid in global hosts ')
+            return False
+
+        host.setdefault('name', host['address'])
+        host['name'] = host['name'].lower()
 
     for sync in config.get('syncs'):
         sync.setdefault('recursive', config.get('recursive'))
@@ -101,12 +124,16 @@ def validate_config(config: dict):
             return False
         
         for host in sync['hosts']:
-            if 'address' not in host:
+            if 'name' in host:
+                host['name'] = host['name'].lower()
+                merge_host(config['hosts'], host)
+            elif 'address' in host:
+                # set address as default name
+                host['name'] = host['address'].lower()
+            else:
                 logger.error('address is not defined for host')
                 return False
 
-            # set address as default name
-            host.setdefault('name', host['address'])
             host.setdefault('user', getpass.getuser())
             host.setdefault('paths', [])
 
