@@ -77,10 +77,11 @@ def validate_config(config: dict):
     config.setdefault('hosts', [])
     config.setdefault('syncs', [])
     config.setdefault('recursive', False)
+    config.setdefault('tags', [])
 
     for sync in config.get('syncs'):
         sync.setdefault('recursive', config.get('recursive'))
-        sync.setdefault('tags', [])
+        sync.setdefault('tags', config['tags'])
 
         if 'name' not in sync:
             logger.error('each sync most have a name')
