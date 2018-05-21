@@ -347,7 +347,7 @@ def setup_argparse():
 
     return parser
 
-if __name__ == '__main__':
+def main():
     parser = setup_argparse()
     args = parser.parse_args()
     if 'action' not in args:
@@ -362,6 +362,10 @@ if __name__ == '__main__':
         config = load_config(args.c)
     else:
         config = load_config()
+
+    if config is None:
+        exit(1)
+    
     if not validate_config(config):
         logger.critical('config error')
         exit(1)
@@ -371,3 +375,6 @@ if __name__ == '__main__':
         push_sync(config, args.sync_name, args.host_name)
     if args.action == 'pull':
         pull_sync(config, args.sync_name, args.host_name)
+
+if __name__ == '__main__':
+    main()
