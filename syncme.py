@@ -30,19 +30,24 @@ def setup_logger(level='INFO'):
     logger.setLevel(getattr(logging, level.upper()))
     logger.addHandler(logging.StreamHandler())
 
-def load_config(config_path=None):
+def load_config(path=None):
     """ Load config from yml file
 
-    Load config from path specified by config_path
-    if config_path not specified load config from SYNCME_CONFIG enviroment
-    variable:
+    Read config from path specified by path and return it's content as dict
+    if path not specified, Read config from SYNCME_CONFIG enviroment
+    variable and if SYNCME_CONFIG is not defined Read config from one
+    of these paths:
          ~/.syncme.yml, ~/.config/syncme.yml, /etc/syncme.yml
 
     args:
-        config_path: custom config path
+        path: custom config path
     """
-    if config_path is not None:
-        
+    if path is not None:
+        paths = [path]
+    else:
+        paths = CONFIG_LOCATIONS
+    # Check paths and read first path that exists
+    for config_path in paths:
         if os.path.exists(config_path) and os.path.isfile(config_path):
             try:
                 logger.debug('loading config from %s', config_path)
@@ -50,16 +55,6 @@ def load_config(config_path=None):
                     return yaml.load(config_file)
             except Exception as e:
                 raise e
-    else:
-        for config_path in CONFIG_LOCATIONS:
-            
-            if os.path.exists(config_path) and os.path.isfile(config_path):
-                try:
-                    logger.debug('loading config from %s', config_path)
-                    with open(config_path, 'r') as config_file:
-                        return yaml.load(config_file)
-                except Exception as e:
-                    raise e
     logger.error('config not found')
     return None
 
