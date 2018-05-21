@@ -74,7 +74,7 @@ def merge_host(global_hosts, host):
         for key in global_host.keys():
             host.setdefault(key, global_host[key])
 
-def validate_config(config: dict):
+def validate_config(config):
     """ check and validate config
 
     check syncs and hosts, fix missing user, check and fix source and
