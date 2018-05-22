@@ -119,12 +119,8 @@ def validate_config(config):
             # sync name are case insensitive
             sync['name'] = sync['name'].lower()
 
-        if 'hosts' not in sync:
-            logger.error('%s: no host defined', sync['name'])
-            return False
-        if 'paths' not in sync:
-            logger.error('%s: paths not defined', sync['name'])
-            return False
+        sync.setdefault('hosts', [])
+        sync.setdefault('paths', [])
         
         for host in sync['hosts']:
             if 'name' in host:
@@ -143,15 +139,16 @@ def validate_config(config):
             zipped_path = zip_longest(sync['paths'], host['paths'], fillvalue=None)
             new_host_paths = []
             for path_pair in zipped_path:
-                if path_pair[1] is None:
-                    new_host_paths.append(path_pair[0])
-                else:
-                    if path_pair[0][-1] == '/' and path_pair[1][-1] != '/':
-                        new_host_paths.append(path_pair[1] + '/')
-                    elif path_pair[0][-1] != '/' and path_pair[1][-1] == '/':
-                        new_host_paths.append(path_pair[1][:-1] )
+                if path_pair[0] is not None:
+                    if path_pair[1] is None:
+                        new_host_paths.append(path_pair[0])
                     else:
-                        new_host_paths.append(path_pair[1])
+                        if path_pair[0][-1] == '/' and path_pair[1][-1] != '/':
+                            new_host_paths.append(path_pair[1] + '/')
+                        elif path_pair[0][-1] != '/' and path_pair[1][-1] == '/':
+                            new_host_paths.append(path_pair[1][:-1] )
+                        else:
+                            new_host_paths.append(path_pair[1])
 
             host['paths'] = new_host_paths
 
