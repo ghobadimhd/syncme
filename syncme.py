@@ -279,11 +279,13 @@ def push_sync(config, sync_name='all', host_name='all'):
         for host in remote_hosts:
             logger.info('Push %s to %s:', sync['name'], host['name'])
             for local_path, remote_path in zip(sync['paths'], host['paths']):
-                return_code = push(local_path=local_path, remote_path=remote_path,
-                               host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
-                if return_code != 0:
-                    logger.error('failed to transfer path %s to %s', local_path, host['name'])
-                    failed_hosts.append((host['name'], local_path))
+                # check if localpath is None, it happens when there are more remote_paths than local_paths
+                if local_path is not None:
+                    return_code = push(local_path=local_path, remote_path=remote_path,
+                                   host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
+                    if return_code != 0:
+                        logger.error('failed to transfer path %s to %s', local_path, host['name'])
+                        failed_hosts.append((host['name'], local_path))
 
     return failed_hosts
 
@@ -312,12 +314,14 @@ def pull_sync(config, sync_name='all', host_name=None):
         for host in remote_hosts:
             logger.info('Pull from %s to %s', host['name'], sync['name'])
             for local_path, remote_path in zip(sync['paths'], host['paths']):
-                return_code = push(local_path=local_path, remote_path=remote_path,
-                                   host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
-                if return_code != 0:
-                    logger.debug('Failed to transfer path %s to local system',
-                                 remote_path)
-                    failed_hosts.append((host['name'], local_path))
+                # check if localpath is None, it happens when there are more remote_paths than local_paths
+                if local_path is not None:
+                    return_code = push(local_path=local_path, remote_path=remote_path,
+                                       host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
+                    if return_code != 0:
+                        logger.debug('Failed to transfer path %s to local system',
+                                     remote_path)
+                        failed_hosts.append((host['name'], local_path))
             if host['name'] not in [x[0] for x in failed_hosts]:
                 logger.info('Local system successfully synced with %s', host['name'])
                 break
