@@ -59,7 +59,15 @@ def load_config(path=None):
     return None
 
 def merge_host(global_hosts, host):
-    """ """
+    """ Merge host with global host
+    
+    Get global hosts and a host, find a global host with same name as host
+    and add missing parameter from global host to the host
+
+    args:
+        global_hosts: list of global hosts
+        host: a host object (dict) to merge 
+    """
     global_host = None
     for h in global_hosts:
         if h['name'] == host['name']:
