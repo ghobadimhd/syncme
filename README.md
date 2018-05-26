@@ -2,6 +2,11 @@
 Syncme is rsync wrapper that use simple yaml config file to trasfer file between hosts
 and keep them sync. I write this keep my laptops syncing.
 
+# Installation
+```
+pip3 install syncme
+```
+
 # Configuration 
 ## config file location :
 Syncme read config file from first path listed below:
