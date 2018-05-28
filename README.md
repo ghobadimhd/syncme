@@ -1,6 +1,6 @@
-# Pysyncme
+# Syncme
 Syncme is rsync wrapper that use simple yaml config file to trasfer file between hosts
-and keep them sync. I write this keep my laptops syncing.
+and keep them sync. I write this to keep my laptops syncing.
 
 # Installation
 ## Ubuntu/linuxmint: 
@@ -22,7 +22,7 @@ Syncme read config file from first path listed below:
 
 ## Configuring Syncme 
 Configuring Syncme is pretty simple. There are three group of settings: 
-### Global settings 
+### Global settings (optional):
 * recursive: if this set True the '-r' option added to rsync command and paths transfered recursively. You can override this in syncs.
 * tags: list of default options that most added to rsync command. You can override this in syncs.
 example: 
@@ -58,7 +58,7 @@ hosts:
     user: mamad
 
 ```
-### Syncs
+### Syncs (required):
 This is most important setting in file. *Syncs* setting is list of Syncs and each Sync mainly consists of a list of local paths and a list of hosts.
 
 * paths (required): Paths in syncs follow same syntax as rsync paths. If a path ends whith '/' the content of the directory will transfered.
@@ -103,19 +103,42 @@ syncs:
           - '/var/projects'
 ```
 # Command
-## Pushing and Pulling
-After configuring Syncme you use *push* subcommand to transfer file to hosts. use --sync-name and --host-name to transfer paths from specific Sync to specific host. default for these options is *all*.
+## Pushing and Pulling:
+After configuring Syncme you use *push* subcommand to transfer file to hosts. use *--sync-name* and *--host-name* to transfer paths from specific Sync to specific host. default for these options is *all*.
 ```
 syncme push # transfer path from  all Sync's to all hosts
-syncme push --sync-name default.
+syncme push *--sync-name* default.
 ```
 Also you can use pull to transfer paths from hosts. If you don't use *--host-name* Syncme try to pull from hosts one by one until a successfull pull. If you don't use *--sync-name* thing happen to all Sync's.
 ```
 syncme pull
 ```
 
-## list
+## list:
 You can use list subcommand to list current config.
 ```
 syncme list
+default:
+	paths:
+		/home/ghobadimhd
+		~/projects/
+		/var/cache/apt-cacher-ng/
+	hosts:
+		name: netbook
+		address: 192.168.1.15
+		user: netbook
+		paths:
+			/home/ghobadimhd
+			~/projects/
+			/var/cache/apt-cacher-ng/
+		name: example
+		address: example.com
+		user: ghobadimhd
+		paths:
+			/home
+			/var/projects/
+			/var/cache/apt-cacher-ng/
+	tags:
+		-v
+
 ```
