@@ -3,8 +3,11 @@ Syncme is rsync wrapper that use simple yaml config file to trasfer file between
 and keep them sync. I write this keep my laptops syncing.
 
 # Installation
+## Ubuntu/linuxmint: 
 ```
-pip3 install syncme
+# apt update 
+# apt install rsync
+# pip3 install syncme
 ```
 
 # Configuration 
