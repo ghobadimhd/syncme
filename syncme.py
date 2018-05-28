@@ -134,7 +134,7 @@ def validate_config(config):
             if 'address' in host:
                 # set address as default name
                 if 'name' not in host:
-                host['name'] = host['address'].lower()
+                    host['name'] = host['address'].lower()
             else:
                 logger.error('address is not defined for host')
                 return False
@@ -392,6 +392,7 @@ def add_sync(config, name, paths=None, tags=None, recursive=None):
 
     return True
 
+
 def add_host(config, sync_name, name, paths=None, address=None, user=None):
     """ add new sync to config
 
@@ -439,6 +440,7 @@ def add_host(config, sync_name, name, paths=None, address=None, user=None):
 
     return True
 
+
 def add_global_host(config, sync_name, address, name=None, user=None):
     """ add global host """
 
@@ -478,6 +480,22 @@ def set_tags(config, tags):
 def set_recursive(config, recursive):
     """ set global recursive setting in config """
     config['recursive'] = recursive
+    return True
+
+def remove_global_host(config, name):
+    """ remove global host """
+    config['hosts'].remove(get_global_host(config, name))
+    return True
+
+def remove_sync(config, name):
+    """ remove sync """
+    config['syncs'].remove(get_sync(config, name))
+    return True
+
+def remove_host(config, sync_name, name):
+    """ remove sync """
+    sync = get_sync(config, name)
+    sync['hosts'].remove(get_host(config, sync_name, name))
     return True
 
 def setup_argparse():
