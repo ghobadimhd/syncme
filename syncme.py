@@ -439,6 +439,30 @@ def add_host(config, sync_name, name, paths=None, address=None, user=None):
 
     return True
 
+def add_global_host(config, sync_name, address, name=None, user=None):
+    """ add global host """
+
+    if user is None:
+        user = getpass.getuser()
+
+    host = {'name': name,
+            'user': user,
+            }
+    # if address defined
+    if address is not None:
+        host['address'] = address.lower()
+        # set default name
+        if name is not None:
+            host['name'] = name.lower()
+        else:
+            host['name'] = host['address']
+    else:
+        logger.critical('address is not defined for host')
+        return False
+
+    config['hosts'].append(host)
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
