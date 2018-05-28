@@ -336,6 +336,13 @@ def pull_sync(config, sync_name='all', host_name=None):
 
     return failed_hosts
 
+def get_sync(config, name):
+    """ find sync in config and return it """
+
+    for sync in config['syncs']:
+        if sync['name'] == name:
+            return sync
+    return None
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
