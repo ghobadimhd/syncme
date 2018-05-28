@@ -361,6 +361,37 @@ def get_global_host(config, name):
             return host
     return None
 
+def add_sync(config, name, paths=None, tags=None, recursive=None):
+    """ add new sync to config
+
+    args:
+        config: configuration object
+        name: sync name
+        paths: list of paths of syncs
+        tags: list of tags
+        recursive: True or False
+    """
+    if name is None:
+        logger.critical('name is necessary')
+        return False
+    if paths is None:
+        paths = []
+    if tags is None:
+        tags = []
+    if recursive is None:
+        recursive = config['recursive']
+
+    sync = {'name': name,
+            'paths': paths,
+            'tags': tags,
+            'recursive': recursive,
+            'hosts': []
+        }
+
+    config['syncs'].append(sync)
+
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
