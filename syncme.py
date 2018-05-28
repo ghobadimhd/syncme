@@ -392,6 +392,53 @@ def add_sync(config, name, paths=None, tags=None, recursive=None):
 
     return True
 
+def add_host(config, sync_name, name, paths=None, address=None, user=None):
+    """ add new sync to config
+
+    args:
+        config: configuration object
+        sync_name: sync name
+        name: name of host
+        paths: list of host paths
+        address: host address
+        user: user of host to connect. default: current user
+        recursive: True or False
+    """
+    if sync_name is None:
+        logger.critical('sync name is necessary')
+        return False
+    if paths is None:
+        paths = []
+    if user is None:
+        user = getpass.getuser()
+
+    sync = get_sync(config, sync_name)
+    if sync is None:
+        logger.critical("there is no sync with name %s", sync_name)
+        return False
+
+    host = {'paths': paths,
+            'user': user,
+        }
+
+    if name is not None:
+        host['name'] = name.lower()
+        merge_host(config['hosts'], host)
+    # override global host address after merge
+    if address is not None:
+        host['address'] = address.lower()
+    # check if address added by fucntion argument or merging with global host
+    if 'address' in host:
+        # set address as default name
+        if 'name' not in host:
+            host['name'] = host['address'].lower()
+    else:
+        logger.critical('address is not defined for host')
+        return False
+    sync['hosts'].append(host)
+
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
