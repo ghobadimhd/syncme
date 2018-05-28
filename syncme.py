@@ -463,6 +463,13 @@ def add_global_host(config, sync_name, address, name=None, user=None):
     config['hosts'].append(host)
     return True
 
+def save_config(path, config):
+    """ save config to path """
+    yaml_conf = yaml.dump(config, default_flow_style=False)
+    with open(path, 'w') as f:
+        f.write(yaml_conf)
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
