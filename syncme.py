@@ -131,8 +131,9 @@ def validate_config(config):
             if 'name' in host:
                 host['name'] = host['name'].lower()
                 merge_host(config['hosts'], host)
-            elif 'address' in host:
+            if 'address' in host:
                 # set address as default name
+                if 'name' not in host:
                 host['name'] = host['address'].lower()
             else:
                 logger.error('address is not defined for host')
