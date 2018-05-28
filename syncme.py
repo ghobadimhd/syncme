@@ -57,11 +57,11 @@ def load_config(path=None):
                     # config config (file) is empty
                     if config is None:
                         config = dict()
-                    return config
+                    return (config, config_path)
             except Exception as e:
                 raise e
     logger.error('config not found')
-    return None
+    return (None, None)
 
 def merge_host(global_hosts, host):
     """ Merge host with global host
@@ -531,9 +531,9 @@ def main():
     else:
         setup_logger()
     if 'c' in args:
-        config = load_config(args.c)
+        config, config_path = load_config(args.c)
     else:
-        config = load_config()
+        config, config_path = load_config()
 
     if config is None:
         exit(1)
