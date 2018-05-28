@@ -343,6 +343,15 @@ def get_sync(config, name):
         if sync['name'] == name:
             return sync
     return None
+
+def get_host(config, sync_name, name):
+    """ find host in sync and return it  """
+    sync = get_sync(config, sync_name)
+
+    for host in sync['hosts']:
+        if host['name'] == name:
+            return host
+    return None
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
