@@ -470,6 +470,11 @@ def save_config(path, config):
         f.write(yaml_conf)
     return True
 
+def set_tags(config, tags):
+    """ set gloabal tags setting in config """
+    config['tags'] = tags
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
