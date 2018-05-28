@@ -475,6 +475,11 @@ def set_tags(config, tags):
     config['tags'] = tags
     return True
 
+def set_recursive(config, recursive):
+    """ set global recursive setting in config """
+    config['recursive'] = recursive
+    return True
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
