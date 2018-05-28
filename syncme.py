@@ -48,11 +48,16 @@ def load_config(path=None):
         paths = CONFIG_LOCATIONS
     # Check paths and read first path that exists
     for config_path in paths:
+        print(config_path)
         if os.path.exists(config_path) and os.path.isfile(config_path):
             try:
                 logger.debug('loading config from %s', config_path)
                 with open(config_path, 'r') as config_file:
-                    return yaml.load(config_file)
+                    config = yaml.load(config_file)
+                    # config config (file) is empty
+                    if config is None:
+                        config = dict()
+                    return config
             except Exception as e:
                 raise e
     logger.error('config not found')
