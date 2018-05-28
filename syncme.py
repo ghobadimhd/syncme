@@ -352,6 +352,15 @@ def get_host(config, sync_name, name):
         if host['name'] == name:
             return host
     return None
+
+def get_global_host(config, name):
+    """ find global host in config with its name and return it """
+
+    for host in config['hosts']:
+        if host['name'] == name:
+            return host
+    return None
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
