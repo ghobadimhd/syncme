@@ -48,7 +48,6 @@ def load_config(path=None):
         paths = CONFIG_LOCATIONS
     # Check paths and read first path that exists
     for config_path in paths:
-        print(config_path)
         if os.path.exists(config_path) and os.path.isfile(config_path):
             try:
                 logger.debug('loading config from %s', config_path)
@@ -57,6 +56,7 @@ def load_config(path=None):
                     # config config (file) is empty
                     if config is None:
                         config = dict()
+                    logger.debug('Read config from %s', config_path)
                     return (config, config_path)
             except Exception as e:
                 raise e
@@ -530,8 +530,8 @@ def main():
         setup_logger('DEBUG')
     else:
         setup_logger()
-    if 'c' in args:
-        config, config_path = load_config(args.c)
+    if 'config' in args:
+        config, config_path = load_config(args.config)
     else:
         config, config_path = load_config()
 
