@@ -445,7 +445,16 @@ def add_host(config, **kwargs):
 
 
 def add_global_host(config, **kwargs):
-    """ add global host """
+    """ add global host
+
+    add global host to global config
+    
+    args:
+        config: configuration object
+        name: name of host
+        address: host address
+        user: user of host to connect. default: current user
+    """
 
     if kwargs['user'] is None:
         kwargs['user'] = getpass.getuser()
