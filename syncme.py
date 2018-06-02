@@ -444,21 +444,21 @@ def add_host(config, **kwargs):
     return True
 
 
-def add_global_host(config, sync_name, address, name=None, user=None):
+def add_global_host(config, **kwargs):
     """ add global host """
 
-    if user is None:
-        user = getpass.getuser()
+    if kwargs['user'] is None:
+        kwargs['user'] = getpass.getuser()
 
-    host = {'name': name,
-            'user': user,
+    host = {'name': kwargs['name'],
+            'user': kwargs['user'],
             }
     # if address defined
-    if address is not None:
-        host['address'] = address.lower()
+    if kwargs['address'] is not None:
+        host['address'] = kwargs['address'].lower()
         # set default name
-        if name is not None:
-            host['name'] = name.lower()
+        if kwargs['name'] is not None:
+            host['name'] = kwargs['name'].lower()
         else:
             host['name'] = host['address']
     else:
