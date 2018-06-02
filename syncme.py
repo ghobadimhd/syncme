@@ -436,6 +436,9 @@ def add_host(config, **kwargs):
     else:
         logger.critical('address is not defined for host')
         return False
+
+    if sync.get('hosts', None) is None:
+        sync['hosts'] = []
     sync['hosts'].append(host)
 
     return True
