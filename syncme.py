@@ -361,7 +361,7 @@ def get_global_host(config, name):
             return host
     return None
 
-def add_sync(config, name, paths=None, tags=None, recursive=None):
+def add_sync(config, **kwargs):
     """ add new sync to config
 
     args:
@@ -371,20 +371,20 @@ def add_sync(config, name, paths=None, tags=None, recursive=None):
         tags: list of tags
         recursive: True or False
     """
-    if name is None:
+    if kwargs['name'] is None:
         logger.critical('name is necessary')
         return False
-    if paths is None:
-        paths = []
-    if tags is None:
-        tags = []
-    if recursive is None:
-        recursive = config['recursive']
+    if kwargs['paths'] is None:
+        kwargs['paths'] = []
+    if kwargs['tags'] is None:
+        kwargs['tags'] = []
+    if kwargs['recursive'] is None:
+        kwargs['recursive'] = config['recursive']
 
-    sync = {'name': name,
-            'paths': paths,
-            'tags': tags,
-            'recursive': recursive,
+    sync = {'name': kwargs['name'],
+            'paths': kwargs['paths'],
+            'tags': kwargs['tags'],
+            'recursive': kwargs['recursive'],
             'hosts': []
         }
 
