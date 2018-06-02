@@ -393,7 +393,7 @@ def add_sync(config, **kwargs):
     return True
 
 
-def add_host(config, sync_name, name, paths=None, address=None, user=None):
+def add_host(config, **kwargs):
     """ add new sync to config
 
     args:
@@ -405,29 +405,29 @@ def add_host(config, sync_name, name, paths=None, address=None, user=None):
         user: user of host to connect. default: current user
         recursive: True or False
     """
-    if sync_name is None:
+    if kwargs['sync_name'] is None:
         logger.critical('sync name is necessary')
         return False
-    if paths is None:
-        paths = []
-    if user is None:
-        user = getpass.getuser()
+    if kwargs['paths'] is None:
+        kwargs['paths'] = []
+    if kwargs['user'] is None:
+        kwargs['user'] = getpass.getuser()
 
-    sync = get_sync(config, sync_name)
+    sync = get_sync(config, kwargs['sync_name'])
     if sync is None:
-        logger.critical("there is no sync with name %s", sync_name)
+        logger.critical("there is no sync with name %s", kwargs['sync_name'])
         return False
 
-    host = {'paths': paths,
-            'user': user,
+    host = {'paths': kwargs['paths'],
+            'user': kwargs['user'],
         }
 
-    if name is not None:
-        host['name'] = name.lower()
+    if kwargs['name'] is not None:
+        host['name'] = kwargs['name'].lower()
         merge_host(config['hosts'], host)
     # override global host address after merge
-    if address is not None:
-        host['address'] = address.lower()
+    if kwargs['address'] is not None:
+        host['address'] = kwargs['address'].lower()
     # check if address added by fucntion argument or merging with global host
     if 'address' in host:
         # set address as default name
