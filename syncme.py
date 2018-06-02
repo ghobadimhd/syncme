@@ -465,6 +465,9 @@ def add_global_host(config, **kwargs):
         logger.critical('address is not defined for host')
         return False
 
+    if config.get('hosts', None) is None:
+        config['hosts'] = []
+    
     config['hosts'].append(host)
     return True
 
