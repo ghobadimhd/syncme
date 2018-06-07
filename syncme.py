@@ -82,6 +82,113 @@ def merge_host(global_hosts, host):
         for key in global_host.keys():
             host.setdefault(key, global_host[key])
 
+def _fix_host_path(host_paths, sync_paths):
+    """ generate new host paths list based on sync paths
+
+    add or remove trailing slashes base on sync paths
+    add default paths (copy sync path)
+    
+    args:
+        host_paths: host paths
+        sync_paths: sync paths
+    
+    return: new list of host path
+    """
+    zipped_path = zip_longest(sync_paths, host_paths, fillvalue=None)
+    new_host_paths = []
+    for path_pair in zipped_path:
+        if path_pair[0] is not None:
+            if path_pair[1] is None:
+                new_host_paths.append(path_pair[0])
+            else:
+                if path_pair[0][-1] == '/' and path_pair[1][-1] != '/':
+                    new_host_paths.append(path_pair[1] + '/')
+                elif path_pair[0][-1] != '/' and path_pair[1][-1] == '/':
+                    new_host_paths.append(path_pair[1][:-1])
+                else:
+                    new_host_paths.append(path_pair[1])
+    
+    return new_host_paths
+
+def validate_host(host, sync_paths, global_hosts=[]):
+    """ validate host settings 
+    
+    validate host setting by setting default value and check setting for valid value
+
+    args:
+        host: host settings dictionary 
+        sync_paths: sync paths list that used to validate host paths
+        global_host: list of global_host to use for merging host
+
+    return: None
+    """
+    if 'name' in host:
+        host['name'] = host['name'].lower()
+        merge_host(global_hosts, host)
+    if 'address' in host:
+        # set address as default name
+        if 'name' not in host:
+            host['name'] = host['address'].lower()
+    else:
+        logger.error('address is not defined for host')
+        raise AttributeError('Host must have address')
+    
+    host.setdefault('user', getpass.getuser())
+    host.setdefault('paths', [])
+
+    host['paths'] = _fix_host_path(host['paths'], sync_paths)
+
+
+def validate_global_host(host):
+    """ validate host settings 
+    
+    validate host setting by setting default value and check setting for valid value
+
+    args:
+        host: host settings dictionary 
+
+    return: None
+    """
+    if 'address' not in host:
+        logger.error('address is not defined for host')
+        return False
+    if 'paths' in host:
+        logger.error('paths is invalid in global hosts ')
+        return False
+    host.setdefault('name', host['address'])
+    host['name'] = host['name'].lower()
+
+def validate_sync(sync, default_recursive=False, default_tags=None):
+    """ validate sync settings
+
+    validate host setting by setting default value and check setting for valid value
+
+    args:
+        sync: sync settings dictionary
+        default_recursive: default value for recursive flag
+        default_tags: default list of tags
+    """
+    if default_tags is None:
+        defa = []
+    
+    sync.setdefault('recursive', default_recursive)
+    sync.setdefault('tags', default_tags)
+
+    if 'name' not in sync:
+        logger.error('each sync most have a name')
+        return False
+    else:
+        if sync['name'] == 'all':
+            logger.error("sync's name cannot be 'all'")
+            return False
+        # sync name are case insensitive
+    
+    sync['name'] = sync['name'].lower()
+    sync.setdefault('hosts', [])
+    sync.setdefault('paths', [])
+
+
+
 def validate_config(config):
     """ check and validate config
 
@@ -92,7 +199,7 @@ def validate_config(config):
         config: config loaded from yaml file
 
     """
-
+    # set default global settings
     config.setdefault('hosts', [])
     config.setdefault('syncs', [])
     config.setdefault('recursive', False)
@@ -100,63 +207,13 @@ def validate_config(config):
 
     # check and validate global hosts
     for host in config['hosts']:
-        if 'address' not in host:
-            logger.error('address is not defined for host')
-            return False
-        if 'paths' in host:
-            logger.error('paths is invalid in global hosts ')
-            return False
-
-        host.setdefault('name', host['address'])
-        host['name'] = host['name'].lower()
-
-    for sync in config.get('syncs'):
-        sync.setdefault('recursive', config.get('recursive'))
-        sync.setdefault('tags', config['tags'])
-
-        if 'name' not in sync:
-            logger.error('each sync most have a name')
-            return False
-        else:
-            if sync['name'] == 'all':
-                logger.error("sync's name cannot be 'all'")
-                return False
-            # sync name are case insensitive
-            sync['name'] = sync['name'].lower()
-
-        sync.setdefault('hosts', [])
-        sync.setdefault('paths', [])
-        
+        validate_global_host(host)
+    # validate sync
+    for sync in config['syncs']:
+        validate_sync(sync, config['recursive'], config['tags'])
+        # validate hosts in syncs
         for host in sync['hosts']:
-            if 'name' in host:
-                host['name'] = host['name'].lower()
-                merge_host(config['hosts'], host)
-            if 'address' in host:
-                # set address as default name
-                if 'name' not in host:
-                    host['name'] = host['address'].lower()
-            else:
-                logger.error('address is not defined for host')
-                return False
-
-            host.setdefault('user', getpass.getuser())
-            host.setdefault('paths', [])
-
-            zipped_path = zip_longest(sync['paths'], host['paths'], fillvalue=None)
-            new_host_paths = []
-            for path_pair in zipped_path:
-                if path_pair[0] is not None:
-                    if path_pair[1] is None:
-                        new_host_paths.append(path_pair[0])
-                    else:
-                        if path_pair[0][-1] == '/' and path_pair[1][-1] != '/':
-                            new_host_paths.append(path_pair[1] + '/')
-                        elif path_pair[0][-1] != '/' and path_pair[1][-1] == '/':
-                            new_host_paths.append(path_pair[1][:-1] )
-                        else:
-                            new_host_paths.append(path_pair[1])
-
-            host['paths'] = new_host_paths
+            validate_host(host, sync['paths'], config['hosts'])
 
     return True
 
