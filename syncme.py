@@ -293,7 +293,7 @@ def rsync(**kwargs):
     if kwargs['recursive']:
         cmd.append('-r')
     # add tags
-    cmd + kwargs['tags']
+    cmd = cmd + kwargs['tags']
     logger.debug('debug: running ' + ' '.join(cmd))
     return_code, output = sp.getstatusoutput(' '.join(cmd))
     logger.debug(output)
