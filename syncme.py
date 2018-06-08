@@ -50,7 +50,7 @@ def load_config(path=None):
     for config_path in paths:
         if os.path.exists(config_path) and os.path.isfile(config_path):
             try:
-                logger.debug('loading config from %s', config_path)
+                logger.debug('Try to load config from %s', config_path)
                 with open(config_path, 'r') as config_file:
                     config = yaml.load(config_file)
                     # config config (file) is empty
