@@ -319,25 +319,16 @@ def list_syncs(config):
             print('\t\t{}'.format(tag))
         print('')
 
-def push_sync(config, sync_name='all', host_name='all'):
+def push_sync(config, sync_name=None, host_name=None):
     """use the config to push paths to hosts """
 
     failed_hosts = []
-    sync_name = sync_name.lower()
-    host_name = host_name.lower()
     # find sync
-    if sync_name == 'all':
-            syncs = config['syncs']
-    else:
-        syncs = [x for x in config['syncs'] if x['name'] == sync_name]
+    syncs = find_syncs(config, sync_name)
     
     for sync in syncs:
         # find host
-        if host_name == 'all':
-            remote_hosts = sync['hosts']
-        else:
-            remote_hosts = [x for x in sync['hosts']
-                            if x['name'] == host_name]
+        remote_hosts = find_hosts(sync,  host_name)
 
         for host in remote_hosts:
             logger.info('Push %s to %s:', sync['name'], host['name'])
@@ -352,27 +343,16 @@ def push_sync(config, sync_name='all', host_name='all'):
 
     return failed_hosts
 
-def pull_sync(config, sync_name='all', host_name=None):
+def pull_sync(config, sync_name=None, host_name=None):
     """use the config to pull paths from hosts"""
 
     failed_hosts = []
-    sync_name = sync_name.lower()
-    if host_name is not None:
-        host_name = host_name.lower()
-
     # find sync
-    if sync_name == 'all':
-            syncs = config['syncs']
-    else:
-        syncs = [x for x in config['syncs'] if x['name'] == sync_name]
+    syncs = find_syncs(config, sync_name)
 
     for sync in syncs:
         # find host
-        if host_name is None:
-            remote_hosts = sync['hosts']
-        else:
-            remote_hosts = [x for x in sync['hosts']
-                            if x['name'] == host_name]
+        remote_hosts = find_hosts(sync, host_name)
 
         for host in remote_hosts:
             logger.info('Pull from %s to %s', host['name'], sync['name'])
@@ -477,7 +457,6 @@ def add_sync(config, **kwargs):
 
     return True
 
-
 def add_host(config, **kwargs):
     """ add new sync to config
 
@@ -527,7 +506,6 @@ def add_host(config, **kwargs):
     sync['hosts'].append(host)
 
     return True
-
 
 def add_global_host(config, **kwargs):
     """ add global host
@@ -609,12 +587,12 @@ def setup_argparse():
 
     parser_push = subparsers.add_parser('push', help='push paths to hosts')
     parser_push.set_defaults(action='push')
-    parser_push.add_argument('--sync-name', dest='sync_name', default='all')
-    parser_push.add_argument('--host-name', dest='host_name', default='all')
+    parser_push.add_argument('--sync-name', dest='sync_name', default=None)
+    parser_push.add_argument('--host-name', dest='host_name', default=None)
 
     parser_pull = subparsers.add_parser('pull', help='pull paths from a host')
     parser_pull.set_defaults(action='pull')
-    parser_pull.add_argument('--sync-name', dest='sync_name', default='all')
+    parser_pull.add_argument('--sync-name', dest='sync_name', default=None)
     parser_pull.add_argument('--host-name', dest='host_name', default=None)
 
     return parser
