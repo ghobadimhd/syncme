@@ -393,6 +393,34 @@ def pull_sync(config, sync_name='all', host_name=None):
 
     return failed_hosts
 
+
+def find_syncs(config, sync_name=None):
+    """ return list of syncs 
+    
+    if sync_name specified return a list with sync equal to sync_name
+    if sync_name is None it return list off all syncs
+
+    """
+    if sync_name is None:
+        syncs = config['syncs']
+    else:
+        sync_name = sync_name.lower()
+        syncs = [x for x in config['syncs'] if x['name'] == sync_name]
+
+    return syncs
+
+
+def find_hosts(sync, host_name=None):
+
+    if host_name is None:
+        remote_hosts = sync['hosts']
+    else:
+        host_name = host_name.lower()
+        remote_hosts = [x for x in sync['hosts']
+                         if x['name'] == host_name]
+
+    return remote_hosts
+
 def get_sync(config, name):
     """ find sync in config and return it """
 
