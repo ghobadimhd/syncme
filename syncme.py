@@ -319,60 +319,86 @@ def list_syncs(config):
             print('\t\t{}'.format(tag))
         print('')
 
-def push_sync(config, sync_name=None, host_name=None):
-    """use the config to push paths to hosts """
+def syncronize_host(method_name, host, sync_paths, recursive=False, tags=[]):
+    """ syncronize sync paths base on method (push or pull) 
 
-    failed_hosts = []
+    syncronize (pull or push) sync_paths with host paths
+
+    args:
+        method_name: string contain name of method use which used to syncronize. most be 'pull' or 'push'
+        host: host to syncronize with
+        sync_paths: list of paths for syncing with host's paths
+        tags: list of str tags(options) added to rsync command
+        recursive: if set True -r option added to rsync
+
+    returns: list of paths that failed to sync
+    """
+    methods = {'push': push, 'pull': pull}
+
+    if method_name not in methods.keys():
+        raise AttributeError("method most 'push' or 'pull' ")
+    else:
+        method = methods[method_name]
+
+    failed_paths = []
+    for local_path, remote_path in zip(sync_paths, host['paths']):
+        # check if localpath is None, it happens when there are more remote_paths than local_paths
+        if local_path is None:
+            # if localpath is None pass to next path
+            continue
+        
+        return_code = method(local_path=local_path, remote_path=remote_path,
+                           host=host['address'], user=host['user'], tags=tags, recursive=recursive)
+        if return_code != 0:
+            logger.error(
+                'failed to sync (%s) path %s to %s', method_name, local_path, host['name'])
+            failed_paths.append((local_path, remote_path))
+
+    return failed_paths
+
+
+def syncronize_syncs(method_name, config, sync_name=None, host_name=None):
+    """use the config to push paths to hosts 
+    
+    syncronize syncs by pulling or pushing sync's paths to hosts
+     if None used as host_name with push method, sync syncronized 
+     with all hosts, but in pull method it start syncing sync to
+     hosts until a successful sync happens.
+
+    args:
+        method_name: string contain name of method use which used to syncronize. most be 'pull' or 'push'
+        config: config object that used to find syncs and hosts
+        sync_name: name of sync to syncronize. if  None used all sync will syncronized
+        host_name: name of host to syncronize with.
+
+    return: list of tuple (sync, host, failed_paths)
+    """
+
+    failed_syncs = []
     # find sync
     syncs = find_syncs(config, sync_name)
-    
+
     for sync in syncs:
         # find host
         remote_hosts = find_hosts(sync,  host_name)
 
         for host in remote_hosts:
-            logger.info('Push %s to %s:', sync['name'], host['name'])
-            for local_path, remote_path in zip(sync['paths'], host['paths']):
-                # check if localpath is None, it happens when there are more remote_paths than local_paths
-                if local_path is not None:
-                    return_code = push(local_path=local_path, remote_path=remote_path,
-                                   host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
-                    if return_code != 0:
-                        logger.error('failed to transfer path %s to %s', local_path, host['name'])
-                        failed_hosts.append((host['name'], local_path))
+            logger.info('Syncronize (%s) %s with %s:', method_name.title(), sync['name'], host['name'])
+            failed_paths = syncronize_host(
+                method_name, host, sync['paths'], sync['recursive'], sync['tags'])
 
-    return failed_hosts
-
-def pull_sync(config, sync_name=None, host_name=None):
-    """use the config to pull paths from hosts"""
-
-    failed_hosts = []
-    # find sync
-    syncs = find_syncs(config, sync_name)
-
-    for sync in syncs:
-        # find host
-        remote_hosts = find_hosts(sync, host_name)
-
-        for host in remote_hosts:
-            logger.info('Pull from %s to %s', host['name'], sync['name'])
-            for local_path, remote_path in zip(sync['paths'], host['paths']):
-                # check if localpath is None, it happens when there are more remote_paths than local_paths
-                if local_path is not None:
-                    return_code = push(local_path=local_path, remote_path=remote_path,
-                                       host=host['address'], user=host['user'], tags=sync['tags'], recursive=sync['recursive'])
-                    if return_code != 0:
-                        logger.debug('Failed to transfer path %s to local system',
-                                     remote_path)
-                        failed_hosts.append((host['name'], local_path))
-            if host['name'] not in [x[0] for x in failed_hosts]:
-                logger.info('Local system successfully synced with %s', host['name'])
-                break
+            if failed_paths:
+                failed_syncs.append((sync, host, failed_paths))
+                logger.error(
+                    'Be careful paths partialy synced try to sync with another host')
             else:
-                logger.error('paths partialy synced try to sync with another host')
+                logger.info(
+                    'Local system successfully synced with %s', host['name'])
+                # after one successful pull stop pulling from other hosts
+                if method_name == 'pull':
+                    break
 
-    return failed_hosts
-
+    return failed_syncs
 
 def find_syncs(config, sync_name=None):
     """ return list of syncs 
@@ -621,10 +647,12 @@ def main():
         exit(1)
     if args.action == 'list':
         list_syncs(config)
-    if args.action == 'push':
-        push_sync(config, args.sync_name, args.host_name)
-    if args.action == 'pull':
-        pull_sync(config, args.sync_name, args.host_name)
+    if args.action in ['push', 'pull']:
+        syncronize_syncs(args.action, config, args.sync_name, args.host_name)
+    # if args.action == 'push':
+    #     push_sync(config, args.sync_name, args.host_name)
+    # if args.action == 'pull':
+    #     pull_sync(config, args.sync_name, args.host_name)
 
 if __name__ == '__main__':
     main()
