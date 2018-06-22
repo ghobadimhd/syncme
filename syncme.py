@@ -295,8 +295,8 @@ def rsync(**kwargs):
     # add tags
     cmd = cmd + kwargs['tags']
     logger.debug('debug: running ' + ' '.join(cmd))
-    return_code, output = sp.getstatusoutput(' '.join(cmd))
-    logger.debug(output)
+    job = sp.Popen(' '.join(cmd))
+    return_code = job.wait()
     return return_code
 
 def list_syncs(config):
