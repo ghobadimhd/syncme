@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='syncme',
-      version='0.1.4',
+      version='0.1.5',
       description='Simple rsync wrapper',
       keywords='sample setuptools development',
       author='Mohammad Ghobadi',
