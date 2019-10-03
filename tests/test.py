@@ -1,9 +1,10 @@
 import os
-from unittest import TestCase
-from unittest.mock import MagicMock, Mock, patch, mock_open
 from copy import copy
+from unittest import TestCase
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import syncme
+from sample_config import SAMPLE_PARSED_CONFIG
 
 
 class TestSyncme(TestCase):
@@ -19,49 +20,10 @@ class TestSyncme(TestCase):
             '/etc/syncme.yml'
         ]
 
-        self.default_config_content = """
-recursive: True
-tags:
-  - '-v'
-  - '--perms'
+        with open('tests/sample_config.yml') as f:
+            self.default_config_content = f.read()
 
-hosts:
-  - name: example
-    address: example.com
-    user: ghobadimhd
-  - name: netbook
-    address: 192.168.1.15
-    user: mamad
-
-syncs:
-  - name: default
-    paths:
-      - '/home/ghobadimhd'
-      - '~/projects/'
-      - '/var/cache/apt-cacher-ng/'
-    tags: ['-v']
-    hosts:
-      - name: netbook
-        user: netbook
-
-      - name: example
-        paths:
-          - '/home'
-          - '/var/projects'
-"""
-        self.default_config = {
-            'hosts': [{'address': 'example.com', 'name': 'example', 'user': 'ghobadimhd'},
-                              {'address': '192.168.1.15', 'name': 'netbook', 'user': 'mamad'}],
-                               'recursive': True,
-                               'syncs': [{'hosts': [{'name': 'netbook', 'user': 'netbook'},
-                                                    {'name': 'example', 'paths': ['/home', '/var/projects']}],
-                                          'name': 'default',
-                                          'paths': ['/home/ghobadimhd',
-                                                    '~/projects/',
-                                                    '/var/cache/apt-cacher-ng/'],
-                                          'tags': ['-v']}],
-                               'tags': ['-v', '--perms']}
-
+        self.default_config = SAMPLE_PARSED_CONFIG
 
     @patch('syncme.os')
     def test_load_config(self, mock_os):
@@ -90,7 +52,7 @@ syncs:
         # FIXME: it's too imperative and complicated
         mock_os.path.isfile.return_value = True
         with patch('syncme.open', mock_open(
-                    read_data=self.default_config_content)):
+                   read_data=self.default_config_content)):
             for path in self.default_config_files:
                 with self.subTest(file=path):
                     mock_os.path.exists.side_effect = lambda p: True if p == path else False
@@ -104,24 +66,46 @@ syncs:
             self.assertDictEqual(result[0], self.default_config)
             self.assertEqual(result[1], sample_path)
 
-
             with patch('syncme.open', mock_open(
                     read_data='')):
                 result = syncme.load_config(sample_path)
                 self.assertDictEqual(result[0], dict())
                 self.assertEqual(result[1], sample_path)
 
-
     def test_merge_host(self):
-      """ test merge_host function """
+        """ test merge_host function """
 
-      sample_host = copy(self.default_config['syncs'][0]['hosts'][1])
-      sample_global_host = self.default_config['hosts']
+        sample_host = copy(self.default_config['syncs'][0]['hosts'][1])
+        sample_global_host = self.default_config['hosts']
 
-      expected_result = {'name': 'example',
-                         'address': 'example.com',
-                         'user': 'ghobadimhd',
-                         'paths': ['/home', '/var/projects']}
-      
-      syncme.merge_host(sample_global_host, sample_host)
-      self.assertDictEqual(sample_host, expected_result)
+        expected_result = {'name': 'example',
+                           'address': 'example.com',
+                           'user': 'ghobadimhd',
+                           'paths': ['/home', '/var/projects']}
+
+        syncme.merge_host(sample_global_host, sample_host)
+        self.assertDictEqual(sample_host, expected_result)
+
+    def test_fix_host_path(self):
+        """ test _fix_host_path function """
+
+        sample_path_list1 = [
+            '/home/ghobadimhd',
+          '~/projects/',
+          '/var/cache/apt-cacher-ng',
+          '/var/backups/'
+        ]
+        sample_path_list2 = [
+            '/remote/sergey/',
+            '/var/projects',
+            '/var/cache/apt-cacher-ng',
+        ]
+        expected_path_list = [
+            '/remote/sergey',
+            '/var/projects/',
+            '/var/cache/apt-cacher-ng',
+            '/var/backups/',
+        ]
+
+        result = syncme._fix_host_path(sample_path_list2, sample_path_list1)
+        self.assertListEqual(result, expected_path_list)

@@ -1,0 +1,28 @@
+recursive: True
+tags:
+  - '-v'
+  - '--perms'
+
+hosts:
+  - name: example
+    address: example.com
+    user: ghobadimhd
+  - name: netbook
+    address: 192.168.1.15
+    user: mamad
+
+syncs:
+  - name: default
+    paths:
+      - '/home/ghobadimhd'
+      - '~/projects/'
+      - '/var/cache/apt-cacher-ng/'
+    tags: ['-v']
+    hosts:
+      - name: netbook
+        user: netbook
+
+      - name: example
+        paths:
+          - '/home'
+          - '/var/projects'
