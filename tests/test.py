@@ -1,6 +1,7 @@
 import os
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch, mock_open
+from copy import copy
 
 import syncme
 
@@ -109,3 +110,18 @@ syncs:
                 result = syncme.load_config(sample_path)
                 self.assertDictEqual(result[0], dict())
                 self.assertEqual(result[1], sample_path)
+
+
+    def test_merge_host(self):
+      """ test merge_host function """
+
+      sample_host = copy(self.default_config['syncs'][0]['hosts'][1])
+      sample_global_host = self.default_config['hosts']
+
+      expected_result = {'name': 'example',
+                         'address': 'example.com',
+                         'user': 'ghobadimhd',
+                         'paths': ['/home', '/var/projects']}
+      
+      syncme.merge_host(sample_global_host, sample_host)
+      self.assertDictEqual(sample_host, expected_result)
