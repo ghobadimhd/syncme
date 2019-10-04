@@ -109,3 +109,44 @@ class TestSyncme(TestCase):
 
         result = syncme._fix_host_path(sample_path_list2, sample_path_list1)
         self.assertListEqual(result, expected_path_list)
+
+
+    def test_validate_global_host(self):
+        """ test valiate_global_host function """
+
+        sample_host1 = { 
+          'address': 'example.com',
+        }
+
+        expected_result = {
+          'name': 'example.com',
+          'address': 'example.com',
+        }
+
+        return_value = syncme.validate_global_host(sample_host1)
+        self.assertDictEqual(sample_host1, expected_result)
+
+        # it should return True if everything goes OK
+        # FIXME: it better for function to return host in normal and throw exception if anything goes wrong
+        self.assertTrue(return_value)
+
+        sample_host2 = { 
+          'name': 'example.com',
+        }
+
+        return_value = syncme.validate_global_host(sample_host2)
+
+        # must return False if address missing
+        # FIXME: it's better to throw exception instead of returning False
+        self.assertFalse(return_value)
+
+        sample_host3 = {
+            'name': 'example.com',
+            'paths': ['/some/where', '/path1/file']
+        }
+
+        return_value = syncme.validate_global_host(sample_host3)
+
+        # must return false if path defined in host
+        # FIXME: it's better to throw exception instead of returning False
+        self.assertFalse(return_value)
