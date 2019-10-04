@@ -156,7 +156,9 @@ def validate_global_host(host):
         logger.error('paths is invalid in global hosts ')
         return False
     host.setdefault('name', host['address'])
+    # convert name to lower case
     host['name'] = host['name'].lower()
+    return True
 
 def validate_sync(sync, default_recursive=False, default_tags=None):
     """ validate sync settings
