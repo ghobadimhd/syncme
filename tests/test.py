@@ -150,3 +150,49 @@ class TestSyncme(TestCase):
         # must return false if path defined in host
         # FIXME: it's better to throw exception instead of returning False
         self.assertFalse(return_value)
+
+    def test_validate_host(self):
+        """ test validate_host function """
+
+        sample_global_host_list = [
+            {
+                'name': 'example.com',
+                'address': 'example.com',
+                'user': 'user1',
+                'password': 'password123',
+            }
+        ]
+
+        sample_host1 = {
+            'name': 'example.com',
+        }
+
+        sample_path1 = [
+            '/home/ghobadimhd',
+            '~/projects/',
+            '/var/cache/apt-cacher-ng',
+            '/var/backups/'
+        ]
+
+        expected_result = {
+            'name': 'example.com',
+            'address': 'example.com',
+            'user': 'user1',
+            'password': 'password123',
+            'paths': [
+                '/home/ghobadimhd',
+                '~/projects/',
+                '/var/cache/apt-cacher-ng',
+                '/var/backups/'
+            ]
+        }
+        # FIXME: it's better that original function return host than changing it and in
+        syncme.validate_host(sample_host1, sample_path1,
+                             sample_global_host_list)
+        self.assertDictEqual(sample_host1, expected_result)
+
+        sample_host2 = {}
+
+        with self.assertRaises(AttributeError):
+            syncme.validate_host(sample_host2, sample_path1,
+                                 sample_global_host_list)
