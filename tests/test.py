@@ -196,3 +196,49 @@ class TestSyncme(TestCase):
         with self.assertRaises(AttributeError):
             syncme.validate_host(sample_host2, sample_path1,
                                  sample_global_host_list)
+
+    def test_validate_sync(self):
+        """ test validate_sync_function """
+
+        # if sync is empty it must return false
+        # FIXME: it's better to orginal function Raise a exception
+        sample_sync = {}
+
+        result = syncme.validate_sync(sample_sync)
+        self.assertFalse(result)
+
+        # sync with reserved name 'all' is not allowed
+        sample_sync = {'name': 'all'}
+        result = syncme.validate_sync(sample_sync)
+        self.assertFalse(result)
+
+        sample_sync = {
+            'name': 'test',
+            'paths': [
+                '/home/ghobadimhd/',
+                '~/projects',
+                '/var/cache/apt-cacher-ng',
+                '/var/backups/'
+            ],
+
+        }
+
+        expected_sync = {
+            'name': 'test',
+            'recursive': False,
+            'tags': [],
+            'paths': [
+                '/home/ghobadimhd/',
+                '~/projects',
+                '/var/cache/apt-cacher-ng',
+                '/var/backups/'
+            ],
+            'hosts': []
+        }
+
+        self.maxDiff = None
+        result = syncme.validate_sync(sample_sync)
+        print(sample_sync)
+        self.assertTrue(result)
+        self.assertDictEqual(sample_sync, expected_sync)
+
