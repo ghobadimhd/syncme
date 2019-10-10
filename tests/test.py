@@ -242,3 +242,117 @@ class TestSyncme(TestCase):
         self.assertTrue(result)
         self.assertDictEqual(sample_sync, expected_sync)
 
+    def test_validate_config_empty_config(self):
+        """ test validate_config with empty config """
+
+        sample_config = {}
+
+        expected_config = {
+            'hosts': [],
+            'syncs': [],
+            'recursive': False,
+            'tags': [],
+        }
+
+        result = syncme.validate_config(sample_config)
+        self.assertTrue(result)
+        self.assertDictEqual(sample_config, expected_config)
+
+    def test_validate_config_invalid_config(self):
+        """ test validate_config function with invalid configuration """
+
+        sample_config = {
+            'syncs': [
+                {
+                    'name': 'all'
+                }
+            ]
+        }
+
+        result = syncme.validate_config(sample_config)
+        # FIXME: it's better to raise exception when something goes wrong
+        self.assertFalse(result, 'syncs with name "all" are not allowed')
+
+        sample_config = {
+            'hosts': [
+                {
+                    # global host without address field is invalid
+                    'name': 'global_host'
+                }
+            ]
+        }
+        is_valid = syncme.validate_config(sample_config)
+        self.assertFalse(is_valid)
+
+        sample_config = {
+            'hosts': [
+                {
+                    # a global host at least need to define a name and address
+                    'name': 'global_host',
+                    'address': 'example.com'
+                }
+            ]
+        }
+        is_valid = syncme.validate_config(sample_config)
+        self.assertTrue(is_valid)
+
+        sample_config = {
+            'hosts': [
+                {
+                    # global host with paths field is invalid
+                    'name': 'global_host',
+                    'address': 'example.com',
+                    'paths': [
+                        '/some/path',
+                    ]
+                }
+            ]
+        }
+        is_valid = syncme.validate_config(sample_config)
+        self.assertFalse(is_valid)
+
+        sample_config = {
+            'hosts': [
+                {
+                    'name': 'global_host',
+                    'address': 'example.com',
+                    'user': 'user1',
+                    'password': '123'
+                }
+            ],
+            'syncs': [
+                {
+                    # sync without a name is invalid
+                    'paths': [
+                        '/some/path',
+                        '/another/path'
+                    ]
+                }
+            ]
+        }
+        is_valid = syncme.validate_config(sample_config)
+        self.assertFalse(is_valid)
+
+        # host is defined without address
+        sample_config = {
+            'hosts': [
+                {
+                    'name': 'backup_server',
+                }
+            ],
+            'syncs': [
+                {
+                    'name': 'backups',
+                    'paths': [
+                        '/some/path',
+                        '/another/path'
+                    ],
+                    'hosts': [
+                        'name':'backup_server'
+                    ]
+
+                }
+            ]
+        }
+        is_valid = syncme.validate_config(sample_config)
+        self.assertFalse(is_valid)
