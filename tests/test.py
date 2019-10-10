@@ -351,7 +351,9 @@ class TestSyncme(TestCase):
                         '/another/path'
                     ],
                     'hosts': [
-                        'name':'backup_server'
+                        {
+                            'name': 'backup_server',
+                        }
                     ]
 
                 }
