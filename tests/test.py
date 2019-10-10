@@ -55,7 +55,8 @@ class TestSyncme(TestCase):
                    read_data=self.default_config_content)):
             for path in self.default_config_files:
                 with self.subTest(file=path):
-                    mock_os.path.exists.side_effect = lambda p: True if p == path else False
+                    mock_os.path.exists.side_effect = \
+                        lambda p: True if p == path else False
                     result = syncme.load_config()
                     self.assertDictEqual(result[0], self.default_config)
                     self.assertEqual(result[1], path)
@@ -66,6 +67,7 @@ class TestSyncme(TestCase):
             self.assertDictEqual(result[0], self.default_config)
             self.assertEqual(result[1], sample_path)
 
+            # test if function work with given argument
             with patch('syncme.open', mock_open(
                     read_data='')):
                 result = syncme.load_config(sample_path)
@@ -91,9 +93,9 @@ class TestSyncme(TestCase):
 
         sample_path_list1 = [
             '/home/ghobadimhd',
-          '~/projects/',
-          '/var/cache/apt-cacher-ng',
-          '/var/backups/'
+            '~/projects/',
+            '/var/cache/apt-cacher-ng',
+            '/var/backups/'
         ]
         sample_path_list2 = [
             '/remote/sergey/',
@@ -110,28 +112,28 @@ class TestSyncme(TestCase):
         result = syncme._fix_host_path(sample_path_list2, sample_path_list1)
         self.assertListEqual(result, expected_path_list)
 
-
     def test_validate_global_host(self):
         """ test valiate_global_host function """
 
-        sample_host1 = { 
-          'address': 'example.com',
+        sample_host1 = {
+            'address': 'example.com',
         }
 
         expected_result = {
-          'name': 'example.com',
-          'address': 'example.com',
+            'name': 'example.com',
+            'address': 'example.com',
         }
 
         return_value = syncme.validate_global_host(sample_host1)
         self.assertDictEqual(sample_host1, expected_result)
 
         # it should return True if everything goes OK
-        # FIXME: it better for function to return host in normal and throw exception if anything goes wrong
+        # FIXME: it better for function to return host in normal and throw
+        # exception if anything goes wrong
         self.assertTrue(return_value)
 
-        sample_host2 = { 
-          'name': 'example.com',
+        sample_host2 = {
+            'name': 'example.com',
         }
 
         return_value = syncme.validate_global_host(sample_host2)
@@ -186,7 +188,8 @@ class TestSyncme(TestCase):
                 '/var/backups/'
             ]
         }
-        # FIXME: it's better that original function return host than changing it and in
+        # FIXME: it's better that original function return host than changing
+        # it and in
         syncme.validate_host(sample_host1, sample_path1,
                              sample_global_host_list)
         self.assertDictEqual(sample_host1, expected_result)
