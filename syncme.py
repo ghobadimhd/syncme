@@ -63,24 +63,25 @@ def load_config(path=None):
     logger.error('config not found')
     return (None, None)
 
-def merge_host(global_hosts, host):
+def merge_host(global_host_list, host):
     """ Merge host with global host
-    
+
     Get global hosts and a host, find a global host with same name as host
     and add missing parameter from global host to the host
 
     args:
         global_hosts: list of global hosts
-        host: a host object (dict) to merge 
+        host: a host object (dict) to merge
     """
-    global_host = None
-    for h in global_hosts:
+    # FIXME: rename the variable
+    target_host = None
+    for h in global_host_list:
         if h['name'] == host['name']:
-            global_host = h
+            target_host = h
             break
-    if global_host is not None:
-        for key in global_host.keys():
-            host.setdefault(key, global_host[key])
+    if target_host is not None:
+        for key in target_host.keys():
+            host.setdefault(key, target_host[key])
 
 def _fix_host_path(host_paths, sync_paths):
     """ generate new host paths list based on sync paths
