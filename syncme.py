@@ -83,16 +83,29 @@ def merge_host(global_host_list, host):
         for key in target_host.keys():
             host.setdefault(key, target_host[key])
 
+
+def map_path(source, destination):
+    """ add default destination based on source and append or remove ending / to/from destination """
+    if destination is None:
+        destination = source
+
+    # normalize destination path
+    destination = os.path.normpath(destination)
+    if source.endswith('/'):
+        destination += '/'
+    return destination
+
+
 def _fix_host_path(host_paths, sync_paths):
     """ generate new host paths list based on sync paths
 
     add or remove trailing slashes base on sync paths
     add default paths (copy sync path)
-    
+
     args:
         host_paths: host paths
         sync_paths: sync paths
-    
+
     return: new list of host path
     """
     zipped_path = zip_longest(sync_paths, host_paths, fillvalue=None)
@@ -108,8 +121,18 @@ def _fix_host_path(host_paths, sync_paths):
                     new_host_paths.append(path_pair[1][:-1])
                 else:
                     new_host_paths.append(path_pair[1])
-    
-    return new_host_paths
+
+    # FIXME: this is too complicated
+    # FIXME: path_pair variable's are confusing
+    source_destination_list = zip_longest(
+        sync_paths, host_paths, fillvalue=None)
+    new_host_path_list = []
+    for source, destination in source_destination_list:
+        new_destination = map_path(source, destination)
+        new_host_path_list.append(new_destination)
+
+    return new_host_path_list
+
 
 def validate_host(host, sync_paths, global_hosts=[]):
     """ validate host settings 
