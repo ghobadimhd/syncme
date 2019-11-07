@@ -195,7 +195,7 @@ def validate_sync(sync, default_recursive=False, default_tags=None):
         default_tags: default list of tags
     """
     if default_tags is None:
-        defa = []
+        default_tags = []
     
     sync.setdefault('recursive', default_recursive)
     sync.setdefault('tags', default_tags)
@@ -204,7 +204,7 @@ def validate_sync(sync, default_recursive=False, default_tags=None):
         logger.error('each sync most have a name')
         return False
     else:
-        if sync['name'] == 'all':
+        if sync['name'].lower() == 'all':
             logger.error("sync's name cannot be 'all'")
             return False
         # sync name are case insensitive
@@ -212,6 +212,8 @@ def validate_sync(sync, default_recursive=False, default_tags=None):
     sync['name'] = sync['name'].lower()
     sync.setdefault('hosts', [])
     sync.setdefault('paths', [])
+
+    return True
 
 
 
@@ -233,13 +235,20 @@ def validate_config(config):
 
     # check and validate global hosts
     for host in config['hosts']:
-        validate_global_host(host)
+        is_valid = validate_global_host(host)
+        if not is_valid:
+            return False
     # validate sync
     for sync in config['syncs']:
-        validate_sync(sync, config['recursive'], config['tags'])
-        # validate hosts in syncs
+        sync.setdefault('hosts', [])
         for host in sync['hosts']:
-            validate_host(host, sync['paths'], config['hosts'])
+            is_host_valid = validate_host(host, sync['paths'], config['hosts'])
+            if not is_host_valid:
+                return False
+        # validate hosts in syncs
+        is_sync_valid = validate_sync(sync, config['recursive'], config['tags'])
+        if not is_sync_valid:
+            return False
 
     return True
 
