@@ -108,22 +108,7 @@ def _fix_host_path(host_paths, sync_paths):
 
     return: new list of host path
     """
-    zipped_path = zip_longest(sync_paths, host_paths, fillvalue=None)
-    new_host_paths = []
-    for path_pair in zipped_path:
-        if path_pair[0] is not None:
-            if path_pair[1] is None:
-                new_host_paths.append(path_pair[0])
-            else:
-                if path_pair[0][-1] == '/' and path_pair[1][-1] != '/':
-                    new_host_paths.append(path_pair[1] + '/')
-                elif path_pair[0][-1] != '/' and path_pair[1][-1] == '/':
-                    new_host_paths.append(path_pair[1][:-1])
-                else:
-                    new_host_paths.append(path_pair[1])
 
-    # FIXME: this is too complicated
-    # FIXME: path_pair variable's are confusing
     source_destination_list = zip_longest(
         sync_paths, host_paths, fillvalue=None)
     new_host_path_list = []
