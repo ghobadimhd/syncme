@@ -4,7 +4,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import syncme
-from sample_config import SAMPLE_PARSED_CONFIG
+import sample_config
 
 
 class TestSyncme(TestCase):
@@ -23,7 +23,7 @@ class TestSyncme(TestCase):
         with open('tests/sample_config.yml') as f:
             self.default_config_content = f.read()
 
-        self.default_config = SAMPLE_PARSED_CONFIG
+        self.default_config = sample_config.SAMPLE_PARSED_CONFIG
 
     @patch('syncme.os')
     def test_load_config(self, mock_os):
@@ -361,3 +361,25 @@ class TestSyncme(TestCase):
         }
         is_valid = syncme.validate_config(sample_config)
         self.assertFalse(is_valid)
+
+    @patch('syncme.os')
+    def test_valid_config(self, mock_os):
+        
+        sample_path = '/sample/path'
+        mock_os.path.isfile.return_value = True
+        with patch('syncme.open', mock_open(
+                   read_data=self.default_config_content)):
+
+            # if just given path exists
+            mock_os.path.exists.side_effect = lambda p: p == sample_path
+            # test if function work with given argument
+            result = syncme.load_config(sample_path)
+            self.assertDictEqual(result[0], self.default_config)
+            self.assertEqual(result[1], sample_path)
+
+        # test if function work with given argument and empty content
+        with patch('syncme.open', mock_open(
+                read_data='')):
+            result = syncme.load_config(sample_path)
+            self.assertDictEqual(result[0], dict())
+            self.assertEqual(result[1], sample_path)
