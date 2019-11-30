@@ -16,17 +16,19 @@ if not os.path.exists(RSYNC):
 
 logger = logging.getLogger(__name__)
 
+
 def get_config_locations():
     """ return possible config locations """
     environ_path = os.path.expanduser(os.environ.get('SYNCME_CONFIG', ''))
     config_locations = [
-    environ_path,
-    os.path.expanduser('~/.syncme.yml'),
-    os.path.expanduser('~/.config/syncme.yml'),
-    '/etc/syncme.yml'
+        environ_path,
+        os.path.expanduser('~/.syncme.yml'),
+        os.path.expanduser('~/.config/syncme.yml'),
+        '/etc/syncme.yml'
     ]
 
     return config_locations
+
 
 def setup_logger(level='INFO'):
     """ setup a default logger """
@@ -155,12 +157,12 @@ def _fix_host_path(host_paths, sync_paths):
 
 
 def validate_host(host, sync_paths, global_hosts=[]):
-    """ validate host settings 
-    
+    """ validate host settings
+
     validate host setting by setting default value and check setting for valid value
 
     args:
-        host: host settings dictionary 
+        host: host settings dictionary
         sync_paths: sync paths list that used to validate host paths
         global_host: list of global_host to use for merging host
 
@@ -176,7 +178,7 @@ def validate_host(host, sync_paths, global_hosts=[]):
     else:
         logger.error('address is not defined for host')
         raise AttributeError('Host must have address')
-    
+
     host.setdefault('user', getpass.getuser())
     host.setdefault('paths', [])
 
@@ -184,12 +186,12 @@ def validate_host(host, sync_paths, global_hosts=[]):
 
 
 def validate_global_host(host):
-    """ validate host settings 
-    
+    """ validate host settings
+
     validate host setting by setting default value and check setting for valid value
 
     args:
-        host: host settings dictionary 
+        host: host settings dictionary
 
     return: None
     """
@@ -204,6 +206,7 @@ def validate_global_host(host):
     host['name'] = host['name'].lower()
     return True
 
+
 def validate_sync(sync, default_recursive=False, default_tags=None):
     """ validate sync settings
 
@@ -216,7 +219,7 @@ def validate_sync(sync, default_recursive=False, default_tags=None):
     """
     if default_tags is None:
         default_tags = []
-    
+
     sync.setdefault('recursive', default_recursive)
     sync.setdefault('tags', default_tags)
 
@@ -228,13 +231,12 @@ def validate_sync(sync, default_recursive=False, default_tags=None):
             logger.error("sync's name cannot be 'all'")
             return False
         # sync name are case insensitive
-    
+
     sync['name'] = sync['name'].lower()
     sync.setdefault('hosts', [])
     sync.setdefault('paths', [])
 
     return True
-
 
 
 def validate_config(config):
@@ -266,11 +268,13 @@ def validate_config(config):
             if not is_host_valid:
                 return False
         # validate hosts in syncs
-        is_sync_valid = validate_sync(sync, config['recursive'], config['tags'])
+        is_sync_valid = validate_sync(
+            sync, config['recursive'], config['tags'])
         if not is_sync_valid:
             return False
 
     return True
+
 
 def push(**kwargs):
     """ transfer file from local to remote
@@ -290,6 +294,7 @@ def push(**kwargs):
 
     return return_code
 
+
 def pull(**kwargs):
     """ transfer file from remote to local
 
@@ -306,6 +311,7 @@ def pull(**kwargs):
             source_host=kwargs.get('host'), source_user=kwargs.get('user'),
             tags=kwargs.get('tags', []), recursive=kwargs.get('recursive', False))
     return return_code
+
 
 def rsync(**kwargs):
     """ this is wrapper around rsync command
@@ -335,7 +341,7 @@ def rsync(**kwargs):
     if kwargs.get('source_host', None) is None:
         cmd = [RSYNC, '{0}'.format(kwargs['source_path']),
                '{0}@{1}:{2}'.format(kwargs['dest_user'], kwargs['dest_host'],
-               kwargs['dest_path'])]
+                                    kwargs['dest_path'])]
     elif kwargs.get('dest_host', None) is None:
         cmd = [RSYNC, '{0}@{1}:{2}'.format(kwargs['source_user'],
                kwargs['source_host'], kwargs['source_path']),
@@ -353,6 +359,7 @@ def rsync(**kwargs):
     job = sp.Popen(cmd)
     return_code = job.wait()
     return return_code
+
 
 def list_syncs(config):
     """list syncs """
@@ -374,8 +381,9 @@ def list_syncs(config):
             print('\t\t{}'.format(tag))
         print('')
 
+
 def syncronize_host(method_name, host, sync_paths, recursive=False, tags=[]):
-    """ syncronize sync paths base on method (push or pull) 
+    """ syncronize sync paths base on method (push or pull)
 
     syncronize (pull or push) sync_paths with host paths
 
@@ -397,13 +405,14 @@ def syncronize_host(method_name, host, sync_paths, recursive=False, tags=[]):
 
     failed_paths = []
     for local_path, remote_path in zip(sync_paths, host['paths']):
-        # check if localpath is None, it happens when there are more remote_paths than local_paths
+        # check if localpath is None, it happens when there are more
+        # remote_paths than local_paths
         if local_path is None:
             # if localpath is None pass to next path
             continue
-        
+
         return_code = method(local_path=local_path, remote_path=remote_path,
-                           host=host['address'], user=host['user'], tags=tags, recursive=recursive)
+                             host=host['address'], user=host['user'], tags=tags, recursive=recursive)
         if return_code != 0:
             logger.error(
                 'failed to sync (%s) path %s to %s', method_name, local_path, host['name'])
@@ -413,10 +422,10 @@ def syncronize_host(method_name, host, sync_paths, recursive=False, tags=[]):
 
 
 def syncronize_syncs(method_name, config, sync_name=None, host_name=None):
-    """use the config to push paths to hosts 
-    
+    """use the config to push paths to hosts
+
     syncronize syncs by pulling or pushing sync's paths to hosts
-     if None used as host_name with push method, sync syncronized 
+     if None used as host_name with push method, sync syncronized
      with all hosts, but in pull method it start syncing sync to
      hosts until a successful sync happens.
 
@@ -438,7 +447,8 @@ def syncronize_syncs(method_name, config, sync_name=None, host_name=None):
         remote_hosts = find_hosts(sync,  host_name)
 
         for host in remote_hosts:
-            logger.info('Syncronize (%s) %s with %s:', method_name.title(), sync['name'], host['name'])
+            logger.info('Syncronize (%s) %s with %s:',
+                        method_name.title(), sync['name'], host['name'])
             failed_paths = syncronize_host(
                 method_name, host, sync['paths'], sync['recursive'], sync['tags'])
 
@@ -455,9 +465,10 @@ def syncronize_syncs(method_name, config, sync_name=None, host_name=None):
 
     return failed_syncs
 
+
 def find_syncs(config, sync_name=None):
-    """ return list of syncs 
-    
+    """ return list of syncs
+
     if sync_name specified return a list with sync equal to sync_name
     if sync_name is None it return list off all syncs
 
@@ -478,9 +489,10 @@ def find_hosts(sync, host_name=None):
     else:
         host_name = host_name.lower()
         remote_hosts = [x for x in sync['hosts']
-                         if x['name'] == host_name]
+                        if x['name'] == host_name]
 
     return remote_hosts
+
 
 def get_sync(config, name):
     """ find sync in config and return it """
@@ -489,6 +501,7 @@ def get_sync(config, name):
         if sync['name'] == name:
             return sync
     return None
+
 
 def get_host(config, sync_name, name):
     """ find host in sync and return it  """
@@ -499,6 +512,7 @@ def get_host(config, sync_name, name):
             return host
     return None
 
+
 def get_global_host(config, name):
     """ find global host in config with its name and return it """
 
@@ -506,6 +520,7 @@ def get_global_host(config, name):
         if host['name'] == name:
             return host
     return None
+
 
 def add_sync(config, **kwargs):
     """ add new sync to config
@@ -532,11 +547,12 @@ def add_sync(config, **kwargs):
             'tags': kwargs['tags'],
             'recursive': kwargs['recursive'],
             'hosts': []
-        }
+            }
 
     config['syncs'].append(sync)
 
     return True
+
 
 def add_host(config, **kwargs):
     """ add new sync to config
@@ -565,7 +581,7 @@ def add_host(config, **kwargs):
 
     host = {'paths': kwargs['paths'],
             'user': kwargs['user'],
-        }
+            }
 
     if kwargs['name'] is not None:
         host['name'] = kwargs['name'].lower()
@@ -588,11 +604,12 @@ def add_host(config, **kwargs):
 
     return True
 
+
 def add_global_host(config, **kwargs):
     """ add global host
 
     add global host to global config
-    
+
     args:
         config: configuration object
         name: name of host
@@ -620,9 +637,10 @@ def add_global_host(config, **kwargs):
 
     if config.get('hosts', None) is None:
         config['hosts'] = []
-    
+
     config['hosts'].append(host)
     return True
+
 
 def save_config(path, config):
     """ save config to path """
@@ -631,25 +649,30 @@ def save_config(path, config):
         f.write(yaml_conf)
     return True
 
+
 def set_tags(config, tags):
     """ set gloabal tags setting in config """
     config['tags'] = tags
     return True
+
 
 def set_recursive(config, recursive):
     """ set global recursive setting in config """
     config['recursive'] = recursive
     return True
 
+
 def remove_global_host(config, name):
     """ remove global host """
     config['hosts'].remove(get_global_host(config, name))
     return True
 
+
 def remove_sync(config, name):
     """ remove sync """
     config['syncs'].remove(get_sync(config, name))
     return True
+
 
 def remove_host(config, sync_name, name):
     """ remove sync """
@@ -657,10 +680,12 @@ def remove_host(config, sync_name, name):
     sync['hosts'].remove(get_host(config, sync_name, name))
     return True
 
+
 def setup_argparse():
     parser = argparse.ArgumentParser(prog='syncme')
     parser.add_argument('-v', action='store_true', help='verbose mode')
-    parser.add_argument('-c', '--config', help='load config from file specified by CONFIG')
+    parser.add_argument(
+        '-c', '--config', help='load config from file specified by CONFIG')
     subparsers = parser.add_subparsers()
 
     parser_list = subparsers.add_parser('list')
@@ -678,6 +703,7 @@ def setup_argparse():
 
     return parser
 
+
 def main():
     parser = setup_argparse()
     args = parser.parse_args()
@@ -690,13 +716,13 @@ def main():
     else:
         setup_logger()
     if 'config' in args:
-        config, config_path = load_config(args.config)
+        config, path = load_config(args.config)
     else:
-        config, config_path = load_config()
+        config, path = load_config()
 
     if config is None:
         exit(1)
-    
+
     if not validate_config(config):
         logger.critical('config error')
         exit(1)
