@@ -9,20 +9,24 @@ from itertools import zip_longest
 import yaml
 
 
-# global variables
-SYNCME_CONFIG = os.path.expanduser(os.environ.get('SYNCME_CONFIG', ''))
-CONFIG_LOCATIONS = [
-    SYNCME_CONFIG,
-    os.path.expanduser('~/.syncme.yml'),
-    os.path.expanduser('~/.config/syncme.yml'),
-    '/etc/syncme.yml'
-    ]
 RSYNC = '/usr/bin/rsync'
 if not os.path.exists(RSYNC):
     logging.error('cannot find rsync at %s', RSYNC)
     raise FileNotFoundError()
 
 logger = logging.getLogger(__name__)
+
+def get_config_locations():
+    """ return possible config locations """
+    environ_path = os.path.expanduser(os.environ.get('SYNCME_CONFIG', ''))
+    config_locations = [
+    environ_path,
+    os.path.expanduser('~/.syncme.yml'),
+    os.path.expanduser('~/.config/syncme.yml'),
+    '/etc/syncme.yml'
+    ]
+
+    return config_locations
 
 def setup_logger(level='INFO'):
     """ setup a default logger """
@@ -43,11 +47,11 @@ def load_config(path=None):
         path: custom config path
     """
     if path is not None:
-        paths = [path]
+        path_list = [path]
     else:
-        paths = CONFIG_LOCATIONS
+        path_list = get_config_locations()
     # Check paths and read first path that exists
-    for config_path in paths:
+    for config_path in path_list:
         if os.path.exists(config_path) and os.path.isfile(config_path):
             try:
                 logger.debug('Try to load config from %s', config_path)
@@ -111,12 +115,12 @@ def _fix_host_path(host_paths, sync_paths):
 
     source_destination_list = zip_longest(
         sync_paths, host_paths, fillvalue=None)
-    new_host_path_list = []
+    new_host_paths = []
     for source, destination in source_destination_list:
         new_destination = map_path(source, destination)
-        new_host_path_list.append(new_destination)
+        new_host_paths.append(new_destination)
 
-    return new_host_path_list
+    return new_host_paths
 
 
 def validate_host(host, sync_paths, global_hosts=[]):

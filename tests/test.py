@@ -25,6 +25,12 @@ class TestSyncme(TestCase):
 
         self.default_config = sample_config.SAMPLE_PARSED_CONFIG
 
+    def test_get_config_locations(self):
+
+
+        result = syncme.get_config_locations()
+        self.assertListEqual(result, self.default_config_files)
+
     @patch('syncme.os')
     def test_load_config(self, mock_os):
 
@@ -364,7 +370,7 @@ class TestSyncme(TestCase):
 
     @patch('syncme.os')
     def test_valid_config(self, mock_os):
-        
+
         sample_path = '/sample/path'
         mock_os.path.isfile.return_value = True
         with patch('syncme.open', mock_open(
