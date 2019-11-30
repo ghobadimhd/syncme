@@ -88,14 +88,14 @@ def load_config(path=None, loader=read_yaml):
     path = discover_config_file(path)
     if path is None:
         logger.error('config not found')
-        return None, None
+        return (None, None)
     # for now only yaml loader supported
+    logger.debug('Reading config from %s', path)
     config = loader(path)
 
     if config is None:
         # default config is empty dict
         config = dict()
-    logger.debug('Read config from %s', path)
 
     return (config, path)
 
