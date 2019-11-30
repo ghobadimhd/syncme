@@ -34,7 +34,43 @@ def setup_logger(level='INFO'):
     logger.setLevel(getattr(logging, level.upper()))
     logger.addHandler(logging.StreamHandler())
 
-def load_config(path=None):
+
+def is_file_exists(file_path):
+    """ checks if path points to a existing file """
+
+    return os.path.exists(file_path) and \
+        os.path.isfile(file_path)
+
+
+def discover_config_file(path=None):
+    """ discover config file """
+    if path is None:
+        for file_path in get_config_locations():
+            if is_file_exists(file_path):
+                return file_path
+
+    else:
+        if is_file_exists(path):
+            return path
+        else:
+            logging.error('cannot find config file at %s', path)
+
+    return None
+
+
+def read_yaml(path):
+    """ load yaml from path"""
+
+    try:
+        logger.debug('Try to load config from %s', path)
+        with open(path, 'r') as config_file:
+            config = yaml.load(config_file)
+            return config
+    except Exception as e:
+        raise e
+
+
+def load_config(path=None, loader=read_yaml):
     """ Load config from yml file
 
     Read config from path specified by path and return it's content as dict
@@ -46,26 +82,21 @@ def load_config(path=None):
     args:
         path: custom config path
     """
-    if path is not None:
-        path_list = [path]
-    else:
-        path_list = get_config_locations()
-    # Check paths and read first path that exists
-    for config_path in path_list:
-        if os.path.exists(config_path) and os.path.isfile(config_path):
-            try:
-                logger.debug('Try to load config from %s', config_path)
-                with open(config_path, 'r') as config_file:
-                    config = yaml.load(config_file)
-                    # config config (file) is empty
-                    if config is None:
-                        config = dict()
-                    logger.debug('Read config from %s', config_path)
-                    return (config, config_path)
-            except Exception as e:
-                raise e
-    logger.error('config not found')
-    return (None, None)
+
+    path = discover_config_file(path)
+    if path is None:
+        logger.error('config not found')
+        return None, None
+    # for now only yaml loader supported
+    config = loader(path)
+
+    if config is None:
+        # default config is empty dict
+        config = dict()
+    logger.debug('Read config from %s', path)
+
+    return (config, path)
+
 
 def merge_host(global_host_list, host):
     """ Merge host with global host
