@@ -13,7 +13,7 @@ class TestSyncme(TestCase):
 
     def setUp(self):
         SYNCME_CONFIG = os.path.expanduser(os.environ.get('SYNCME_CONFIG', ''))
-        self.default_config_files = [
+        self.sample_config_files = [
             SYNCME_CONFIG,
             os.path.expanduser('~/.syncme.yml'),
             os.path.expanduser('~/.config/syncme.yml'),
@@ -21,16 +21,16 @@ class TestSyncme(TestCase):
         ]
 
         with open('tests/sample_config.yml') as f:
-            self.default_config_content = f.read()
+            self.sample_config_content = f.read()
 
-        self.default_config = sample_config.SAMPLE_PARSED_CONFIG
+        self.sample_config = sample_config.SAMPLE_PARSED_CONFIG
         self.sample_valid_config = sample_config.SAMPLE_VALID_CONFIG
 
     def test_get_config_locations(self):
     
 
         result = syncme.get_config_locations()
-        self.assertListEqual(result, self.default_config_files)
+        self.assertListEqual(result, self.config_file_locations)
 
     @patch('syncme.os')
     def test_load_config(self, mock_os):
@@ -59,19 +59,19 @@ class TestSyncme(TestCase):
         # FIXME: it's too imperative and complicated
         mock_os.path.isfile.return_value = True
         with patch('syncme.open', mock_open(
-                   read_data=self.default_config_content)):
-            for path in self.default_config_files:
+                   read_data=self.sample_config_content)):
+            for path in self.sample_config_files:
                 with self.subTest(file=path):
                     mock_os.path.exists.side_effect = \
                         lambda p: True if p == path else False
                     result = syncme.load_config()
-                    self.assertDictEqual(result[0], self.default_config)
+                    self.assertDictEqual(result[0], self.sample_config)
                     self.assertEqual(result[1], path)
 
             mock_os.path.exists.side_effect = lambda p: p == sample_path
 
             result = syncme.load_config(sample_path)
-            self.assertDictEqual(result[0], self.default_config)
+            self.assertDictEqual(result[0], self.sample_config)
             self.assertEqual(result[1], sample_path)
 
             # test if function work with given argument
@@ -84,8 +84,8 @@ class TestSyncme(TestCase):
     def test_merge_host(self):
         """ test merge_host function """
 
-        sample_host = copy(self.default_config['syncs'][0]['hosts'][1])
-        sample_global_host = self.default_config['hosts']
+        sample_host = copy(self.sample_config['syncs'][0]['hosts'][1])
+        sample_global_host = self.sample_config['hosts']
 
         expected_result = {'name': 'example',
                            'address': 'example.com',
@@ -372,7 +372,7 @@ class TestSyncme(TestCase):
     def test_valid_config(self):
         """ test if validate_config work properly """
 
-        sample_config = deepcopy(self.default_config)
+        sample_config = deepcopy(self.sample_config)
         is_valid = syncme.validate_config(sample_config)
         self.assertTrue(is_valid)
         self.assertDictEqual(sample_config, self.sample_valid_config)
