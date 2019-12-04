@@ -1,5 +1,5 @@
 import os
-from copy import copy
+from copy import copy, deepcopy
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
@@ -24,9 +24,10 @@ class TestSyncme(TestCase):
             self.default_config_content = f.read()
 
         self.default_config = sample_config.SAMPLE_PARSED_CONFIG
+        self.sample_valid_config = sample_config.SAMPLE_VALID_CONFIG
 
     def test_get_config_locations(self):
-
+    
 
         result = syncme.get_config_locations()
         self.assertListEqual(result, self.default_config_files)
@@ -368,24 +369,10 @@ class TestSyncme(TestCase):
         is_valid = syncme.validate_config(sample_config)
         self.assertFalse(is_valid)
 
-    @patch('syncme.os')
-    def test_valid_config(self, mock_os):
+    def test_valid_config(self):
+        """ test if validate_config work properly """
 
-        sample_path = '/sample/path'
-        mock_os.path.isfile.return_value = True
-        with patch('syncme.open', mock_open(
-                   read_data=self.default_config_content)):
-
-            # if just given path exists
-            mock_os.path.exists.side_effect = lambda p: p == sample_path
-            # test if function work with given argument
-            result = syncme.load_config(sample_path)
-            self.assertDictEqual(result[0], self.default_config)
-            self.assertEqual(result[1], sample_path)
-
-        # test if function work with given argument and empty content
-        with patch('syncme.open', mock_open(
-                read_data='')):
-            result = syncme.load_config(sample_path)
-            self.assertDictEqual(result[0], dict())
-            self.assertEqual(result[1], sample_path)
+        sample_config = deepcopy(self.default_config)
+        is_valid = syncme.validate_config(sample_config)
+        self.assertTrue(is_valid)
+        self.assertDictEqual(sample_config, self.sample_valid_config)
